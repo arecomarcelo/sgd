@@ -2,9 +2,11 @@
 Página de Slideshow
 Exibe os dashboards em rotação automática com transição suave
 """
+
 import streamlit as st
-import django_setup  # Configura Django ORM
 from streamlit_autorefresh import st_autorefresh
+
+import django_setup  # Configura Django ORM
 
 # Importa os modelos Django
 from dashboard.models import Dashboard, Dashboard_Config
@@ -13,11 +15,12 @@ st.set_page_config(
     page_title="Slideshow",
     page_icon="🎬",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
 
 # Estilo CSS customizado
-st.markdown("""
+st.markdown(
+    """
 <style>
     /* Esconde header, footer e sidebar do Streamlit */
     #MainMenu {visibility: hidden;}
@@ -129,12 +132,16 @@ st.markdown("""
         line-height: 1 !important;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Buscar dashboards ativos ordenados
-dashboards_config = Dashboard_Config.objects.filter(
-    Dashboard__Ativo=True
-).select_related('Dashboard').order_by('Ordem')
+dashboards_config = (
+    Dashboard_Config.objects.filter(Dashboard__Ativo=True)
+    .select_related('Dashboard')
+    .order_by('Ordem')
+)
 
 if not dashboards_config.exists():
     st.error("❌ Nenhum dashboard ativo encontrado!")
@@ -156,10 +163,13 @@ count = st_autorefresh(interval=duracao * 1000, key="slideshow_refresh")
 
 # Avançar para próximo slide
 if count > 0:
-    st.session_state.current_index = (st.session_state.current_index + 1) % total_dashboards
+    st.session_state.current_index = (
+        st.session_state.current_index + 1
+    ) % total_dashboards
 
 # Exibir dashboard
-st.markdown(f"""
+st.markdown(
+    f"""
 <div class="dashboard-card">
     <div class="dashboard-title">{current_dashboard.Nome}</div>
     <div class="dashboard-description">{current_dashboard.Descricao}</div>
@@ -169,7 +179,9 @@ st.markdown(f"""
         🔄 Ordem: {current_config.Ordem}
     </div>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 # Botão de engrenagem para navegação
 if st.button("⚙️", key="settings_btn", type="secondary", help="Gerenciar Dashboards"):

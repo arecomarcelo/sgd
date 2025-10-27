@@ -1,5 +1,6 @@
-from django.shortcuts import render
 from django.http import JsonResponse
+from django.shortcuts import render
+
 from .models import Dashboard, Dashboard_Config
 
 
@@ -24,23 +25,25 @@ def get_dashboards_config(request):
     - duracao: duração em segundos
     """
     # Busca todas as configurações de dashboards ativos, ordenados por Ordem
-    configs = Dashboard_Config.objects.filter(
-        Dashboard__Ativo=True
-    ).select_related('Dashboard').order_by('Ordem')
+    configs = (
+        Dashboard_Config.objects.filter(Dashboard__Ativo=True)
+        .select_related('Dashboard')
+        .order_by('Ordem')
+    )
 
     # Monta a lista de dashboards para o frontend
     dashboards_list = []
     for config in configs:
-        dashboards_list.append({
-            'id': config.id,
-            'ordem': config.Ordem,
-            'nome': config.Dashboard.Nome,
-            'descricao': config.Dashboard.Descricao,
-            'duracao': config.Duracao,
-        })
+        dashboards_list.append(
+            {
+                'id': config.id,
+                'ordem': config.Ordem,
+                'nome': config.Dashboard.Nome,
+                'descricao': config.Dashboard.Descricao,
+                'duracao': config.Duracao,
+            }
+        )
 
-    return JsonResponse({
-        'success': True,
-        'dashboards': dashboards_list,
-        'total': len(dashboards_list)
-    })
+    return JsonResponse(
+        {'success': True, 'dashboards': dashboards_list, 'total': len(dashboards_list)}
+    )
