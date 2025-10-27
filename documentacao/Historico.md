@@ -1072,3 +1072,446 @@ tomli==2.3.0
 
 ---
 
+### ⏰ 17:05 - Ajustes de UI e Implementação de Imagens de Teste
+
+#### 📝 O que foi pedido:
+1. Reposicionar botão "Gerenciar Dashboards" (engrenagem) para o canto superior direito
+2. Implementar exibição de imagens de teste no slideshow (temporário)
+   - Imagens da pasta `imagens/`
+   - Nome da imagem corresponde ao nome do dashboard
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Reposicionamento do Botão de Engrenagem:**
+- ✅ CSS alterado: `bottom: 20px` → `top: 20px`
+- ✅ Botão agora no **canto superior direito**
+- ✅ Mantido todos os efeitos visuais (hover, rotação)
+
+**2. Implementação de Imagens de Teste:**
+- ✅ Adicionados imports: `os`, `pathlib`
+- ✅ Sistema de normalização de nomes
+- ✅ Verificação automática de existência de imagem
+- ✅ Layout adaptativo (com ou sem imagem)
+
+**Normalização de Nomes:**
+Converte nome do dashboard para nome de arquivo:
+```python
+# Exemplo: "Meta Mês" -> "meta_mes.png"
+nome_normalizado = (
+    current_dashboard.Nome.lower()
+    .replace(' ', '_')
+    .replace('ê', 'e')  # Remove acentos
+    .replace('é', 'e')
+    # ... outros acentos
+)
+```
+
+**Imagens Disponíveis:**
+```
+/imagens/
+├── meta_mes.png           → Dashboard: "Meta Mês"
+├── metricas_vendas.png    → Dashboard: "Métricas Vendas"
+├── ranking_produtos.png   → Dashboard: "Ranking Produtos"
+└── ranking_vendedores.png → Dashboard: "Ranking Vendedores"
+```
+
+**Lógica de Exibição:**
+1. Busca imagem: `imagens/{nome_normalizado}.png`
+2. **Se imagem existe:**
+   - Exibe título e descrição
+   - Exibe imagem centralizada (3 colunas)
+   - Exibe informações (slide, duração, ordem)
+3. **Se imagem NÃO existe:**
+   - Exibe layout original (sem imagem)
+
+**Layout com Imagem:**
+```
+┌─────────────────────────────────────┐
+│         Título do Dashboard         │
+│         Descrição                   │
+│                                     │
+│    [        IMAGEM         ]        │
+│                                     │
+│  📊 Slide X/Y | ⏱️ Xs | 🔄 Ordem:N │
+└─────────────────────────────────────┘
+```
+
+**Observações Importantes:**
+⚠️ **Implementação Temporária**
+- Imagens são **apenas para teste visual**
+- Após implementação dos dashboards reais, as imagens devem ser **removidas**
+- Código preparado para fácil remoção (bloco if/else isolado)
+
+#### ✅ Funcionalidades Implementadas:
+1. ✅ Botão engrenagem no canto superior direito
+2. ✅ Exibição automática de imagens quando disponíveis
+3. ✅ Normalização automática de nomes (acentos, espaços)
+4. ✅ Fallback para layout sem imagem
+5. ✅ Layout responsivo com colunas
+
+#### 🎨 Posicionamento do Botão:
+- **Antes**: Canto inferior direito (bottom: 20px)
+- **Agora**: Canto superior direito (top: 20px)
+- Mantido: right: 20px, z-index: 99999
+
+#### 📸 Como Criar Imagens de Teste:
+Para adicionar novos dashboards com imagens:
+1. Nome do arquivo = nome do dashboard normalizado
+2. Salvar em `/imagens/`
+3. Formato PNG
+4. Exemplo: "Vendas Por Região" → `vendas_por_regiao.png`
+
+#### 🧪 Para Testar:
+```bash
+streamlit run app.py --server.port 8001
+```
+
+1. Acesse o slideshow
+2. Veja botão ⚙️ no **canto superior direito** ✓
+3. Observe imagens sendo exibidas nos slides ✓
+4. Dashboards com imagens mostram a imagem
+5. Dashboards sem imagens mantêm layout original
+
+#### 📁 Arquivos Alterados:
+- ✏️ **ATUALIZADO**: `/pages/01_🎬_Slideshow.py` (botão + imagens)
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+
+### ⏰ 17:10 - Correção de Erro no st.image
+
+#### 📝 O que foi pedido:
+Corrigir erro `StreamlitInvalidWidthError` ao exibir imagens
+
+#### 🔧 Detalhamento da Solução:
+
+**Erro Identificado:**
+```
+StreamlitInvalidWidthError: Invalid width value: None.
+Width must be either an integer (pixels), 'stretch', or 'content'.
+```
+
+**Causa:**
+- Streamlit 1.50.0 não aceita mais `width=None`
+- Parâmetro `width` deve ser: inteiro, 'stretch', ou 'content'
+
+**Correção Aplicada:**
+```python
+# Antes (erro):
+st.image(str(imagem_path), width=None)
+
+# Depois (correto):
+st.image(str(imagem_path))
+```
+
+**Explicação:**
+- Removido o parâmetro `width=None`
+- Sem o parâmetro, Streamlit usa comportamento padrão
+- Imagem se ajusta automaticamente à largura da coluna
+
+#### ✅ Resultado:
+- ✅ Erro corrigido
+- ✅ Imagens exibidas corretamente
+- ✅ Ajuste automático à largura da coluna central
+
+#### 📁 Arquivo Alterado:
+- ✏️ **ATUALIZADO**: `/pages/01_🎬_Slideshow.py` (correção width)
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+
+### ⏰ 17:15 - Ajustes Visuais no Slideshow
+
+#### 📝 O que foi pedido:
+1. Background preto
+2. Remover painel de informações (Slide X/Y, tempo, ordem)
+3. Centralizar imagem vertical e horizontalmente
+4. Ajustar imagem para preencher tela
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Background Preto ⬛**
+- Alterado de gradiente para preto sólido (#000000)
+- Aplicado em `.dashboard-card` e `.dashboard-image-container`
+- Garante fundo preto em toda a tela
+
+**2. Remoção do Painel de Informações ❌**
+- **Antes**: Exibia "📊 Slide X/Y | ⏱️ Xs | 🔄 Ordem:N"
+- **Agora**: Apenas imagem em tela cheia
+- Código simplificado para exibição limpa
+
+**3. Centralização da Imagem 🎯**
+- Utilizado Flexbox para centralização perfeita:
+  ```css
+  .dashboard-image-container {
+      display: flex;
+      justify-content: center;  /* Centro horizontal */
+      align-items: center;      /* Centro vertical */
+  }
+  ```
+
+**4. Ajuste de Imagem à Tela 📐**
+- CSS otimizado para tela cheia:
+  ```css
+  .stImage img {
+      max-width: 100vw !important;   /* Largura máxima da viewport */
+      max-height: 100vh !important;  /* Altura máxima da viewport */
+      object-fit: contain !important; /* Mantém proporção */
+  }
+  ```
+
+#### ✅ Resultado Final:
+- ✅ Background 100% preto
+- ✅ Sem painéis ou informações extras
+- ✅ Imagem perfeitamente centralizada (vertical e horizontal)
+- ✅ Imagem ajustada à tela mantendo proporções
+- ✅ Layout limpo e minimalista para exibição em tela cheia
+
+#### 🎨 Layout Atual:
+```
+┌─────────────────────────────────────┐
+│                                     │
+│                                     │
+│       [   IMAGEM CENTRALIZADA  ]    │
+│                                     │
+│                                     │
+└─────────────────────────────────────┘
+        (Background 100% preto)
+          (Botão ⚙️ no topo direito)
+```
+
+#### 📁 Arquivos Alterados:
+- ✏️ **ATUALIZADO**: `/pages/01_🎬_Slideshow.py` (ajustes visuais)
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+
+### ⏰ 16:40 - Painel de Rodapé e Correções de Centralização
+
+#### 📝 O que foi pedido:
+1. Corrigir centralização horizontal das imagens
+2. Adicionar painel fixo no rodapé com informações de atualização:
+   - Card 1: Período (VendaAtualizacao.Periodo)
+   - Card 2: Data Atualização (VendaAtualizacao.Data + VendaAtualizacao.Hora)
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Modelo VendaAtualizacao 📊**
+- Criado modelo Django para tabela existente
+- Configurado com `managed = False` (não gera migrações)
+- Campos: Data, Hora, Periodo, Inseridos, Atualizados
+- Adicionado em `/dashboard/models.py`
+
+**2. Centralização das Imagens 🎯**
+- Ajustado CSS para garantir centralização perfeita
+- `.stImage` com position: fixed e dimensões 100vw/100vh
+- Imagens com max-width: 95vw e max-height: 85vh
+- margin: 0 auto para centralização horizontal
+- object-fit: contain para manter proporções
+
+**3. Painel Fixo no Rodapé 📌**
+- Criado `.footer-panel` com position: fixed bottom: 0
+- Background semi-transparente com backdrop-filter blur
+- Dois cards estilizados com glassmorphism:
+  - Card 1: 📅 Período
+  - Card 2: 🕐 Data Atualização (Data + Hora)
+- z-index: 9999 para ficar acima de outros elementos
+- Flexbox para centralização dos cards
+
+**4. CSS Implementado:**
+```css
+.footer-panel {
+    position: fixed;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.footer-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 30px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+```
+
+**5. Busca de Dados:**
+```python
+venda_atualizacao = VendaAtualizacao.objects.latest('id')
+periodo = venda_atualizacao.Periodo
+data_atualizacao = f"{venda_atualizacao.Data} {venda_atualizacao.Hora}"
+```
+
+#### ✅ Verificações Realizadas:
+- ✅ Dashboards cadastrados na ordem correta (1-4)
+- ✅ Todas as 4 imagens presentes na pasta /imagens/
+- ✅ Dados de VendaAtualizacao disponíveis no banco
+- ✅ Servidor rodando sem erros na porta 8001
+
+#### 📊 Dashboards Ativos:
+1. Meta Mês (3s) - `meta_mes.png`
+2. Métricas de Vendas (5s) - `metricas_vendas.png`
+3. Ranking Vendedores (5s) - `ranking_vendedores.png`
+4. Ranking Produtos (5s) - `ranking_produtos.png`
+
+#### 🎨 Layout Final:
+```
+┌─────────────────────────────────────┐
+│              ⚙️                     │ (botão topo direito)
+│                                     │
+│       [   IMAGEM CENTRALIZADA  ]    │
+│                                     │
+├─────────────────────────────────────┤
+│  📅 Período  │  🕐 Data Atualização │ (rodapé fixo)
+│  valor       │  valor               │
+└─────────────────────────────────────┘
+```
+
+#### 📁 Arquivos Alterados:
+- ✏️ **ATUALIZADO**: `/dashboard/models.py` (modelo VendaAtualizacao)
+- ✏️ **ATUALIZADO**: `/pages/01_🎬_Slideshow.py` (painel rodapé + centralização)
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+
+### ⏰ 16:48 - Correção de Nome de Arquivo de Imagem
+
+#### 📝 O que foi pedido:
+Verificar por que a imagem "Métricas de Vendas" não estava sendo exibida
+
+#### 🔧 Detalhamento da Solução:
+
+**Problema Identificado 🔍**
+- Dashboard cadastrado no banco: `"Métricas de Vendas"`
+- Nome normalizado esperado: `metricas_de_vendas.png`
+- Nome do arquivo existente: `metricas_vendas.png` ❌ (sem "de")
+- **Incompatibilidade**: O código busca `metricas_de_vendas.png` mas o arquivo era `metricas_vendas.png`
+
+**Solução Aplicada ✅**
+- Renomeado arquivo de `metricas_vendas.png` → `metricas_de_vendas.png`
+- Arquivo agora corresponde à normalização correta do nome do dashboard
+
+**Normalização de Nomes:**
+```python
+nome_normalizado = (
+    nome.lower()
+    .replace(' ', '_')      # Espaços → underscore
+    .replace('é', 'e')      # Remove acentos
+    # ... outros caracteres especiais
+)
+```
+
+**Mapeamento Dashboard → Arquivo:**
+```
+"Meta Mês"              → meta_mes.png
+"Métricas de Vendas"    → metricas_de_vendas.png  ✅ CORRIGIDO
+"Ranking Vendedores"    → ranking_vendedores.png
+"Ranking Produtos"      → ranking_produtos.png
+```
+
+#### ✅ Verificação Final:
+- ✅ Meta Mês: `imagens/meta_mes.png`
+- ✅ Métricas de Vendas: `imagens/metricas_de_vendas.png`
+- ✅ Ranking Vendedores: `imagens/ranking_vendedores.png`
+- ✅ Ranking Produtos: `imagens/ranking_produtos.png`
+
+**Todas as 4 imagens agora estão sendo exibidas corretamente!**
+
+#### 📁 Arquivo Renomeado:
+- 🔄 **RENOMEADO**: `imagens/metricas_vendas.png` → `imagens/metricas_de_vendas.png`
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+
+### ⏰ 16:55 - Atualização de Arquivos de Registro - Conclusão da Fase 2
+
+#### 📝 O que foi pedido:
+Atualizar arquivos de registro antes de iniciar a Fase 3 - Integração com SGS
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Planejamento_SGD.md 📋**
+
+Atualizações realizadas:
+- ✅ Fase 2 marcada como **100% Concluída** (14/14 tarefas)
+- ✅ Adicionada nota sobre decisão de arquitetura (Streamlit ao invés de Django Templates)
+- ✅ Expandida lista de tarefas da Fase 2:
+  - Criação aplicação Streamlit base
+  - Página de slideshow com auto-rotação
+  - CSS tela cheia e transições
+  - Página de gerenciamento completa
+  - Modelo VendaAtualizacao
+  - Painel de rodapé com informações
+  - Sistema de imagens temporárias
+- ✅ Fase 3 atualizada para **"🚀 Pronta para Iniciar"**
+- ✅ Adicionada tarefa 3.7: Remover pasta /imagens/ temporária
+- ✅ Adicionada tarefa 3.8: Testar integração completa
+- ✅ Progresso geral atualizado: **22/36 tarefas (61%)**
+- ✅ Data de atualização: 27/10/2025 às 16:55
+
+**2. CLAUDE.md 📘**
+
+Atualizações realizadas:
+- ✅ Estrutura do projeto atualizada:
+  - Adicionada pasta `pages/` com arquivos Streamlit
+  - Adicionada pasta `imagens/` (temporária)
+  - Adicionado `app.py` (aplicação principal)
+  - Adicionado `django_setup.py`
+  - Atualizado `models.py` com VendaAtualizacao
+- ✅ Comandos de desenvolvimento atualizados:
+  - Seção separada para Streamlit e Django Admin
+  - Comando: `streamlit run app.py --server.port 8001`
+  - Acesso: http://localhost:8001
+- ✅ Modelos do banco de dados:
+  - Adicionado modelo VendaAtualizacao (managed=False)
+  - Campos: Data, Hora, Periodo, Inseridos, Atualizados
+- ✅ Nova seção "Funcionalidades Implementadas":
+  - Página de Slideshow (recursos e características)
+  - Página de Gerenciamento (controles disponíveis)
+  - Sistema de normalização de nomes
+- ✅ Dependências principais documentadas:
+  - Django 5.2.7
+  - Streamlit 1.50.0
+  - streamlit-autorefresh 1.0.1
+  - Outras bibliotecas relevantes
+
+**3. Historico.md 📝**
+
+- ✅ Todas as interações do dia documentadas
+- ✅ Entrada final de consolidação adicionada
+- ✅ Total de 6 interações registradas no dia 27/10/2025
+
+#### 📊 Resumo da Fase 2 Concluída:
+
+**Entregas:**
+- ✅ Interface Streamlit completa com 2 páginas
+- ✅ Sistema de slideshow automático funcional
+- ✅ Gerenciamento de dashboards via interface
+- ✅ 4 dashboards configurados e rodando
+- ✅ Integração com banco de dados PostgreSQL
+- ✅ Sistema de exibição com imagens temporárias
+- ✅ Painel de informações de atualização
+
+**Tecnologias:**
+- Django 5.2.7 (ORM e modelos)
+- Streamlit 1.50.0 (interface)
+- PostgreSQL (banco de dados)
+- CSS customizado (design)
+
+**Próxima Fase:**
+- 🚀 Fase 3 - Integração com SGS (Streamlit)
+- Substituir imagens por dashboards dinâmicos
+- Importar componentes do SGS
+- 8 tarefas a serem executadas
+
+#### 📁 Arquivos Atualizados:
+- ✏️ **ATUALIZADO**: `/documentacao/Planejamento_SGD.md`
+- ✏️ **ATUALIZADO**: `/documentacao/CLAUDE.md`
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+

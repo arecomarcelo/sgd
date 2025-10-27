@@ -43,3 +43,25 @@ class Dashboard_Config(models.Model):
 
     def __str__(self):
         return f"{self.Ordem} - {self.Dashboard.Nome} ({self.Duracao}s)"
+
+
+class VendaAtualizacao(models.Model):
+    """
+    Modelo para armazenar informações sobre a última atualização das vendas.
+    Tabela existente no banco de dados (não gera migração).
+    """
+
+    class Meta:
+        db_table = "VendaAtualizacao"
+        managed = False  # Tabela já existe, Django não deve gerenciá-la
+        verbose_name = "Venda Atualização"
+        verbose_name_plural = "Vendas Atualizações"
+
+    Data = models.CharField(max_length=255, verbose_name="Data")
+    Hora = models.CharField(max_length=255, verbose_name="Hora")
+    Periodo = models.CharField(max_length=255, verbose_name="Período")
+    Inseridos = models.CharField(max_length=255, verbose_name="Inseridos")
+    Atualizados = models.CharField(max_length=255, verbose_name="Atualizados")
+
+    def __str__(self):
+        return f"{self.Periodo} - {self.Data} {self.Hora}"

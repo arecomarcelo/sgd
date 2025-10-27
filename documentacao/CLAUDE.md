@@ -45,17 +45,24 @@ O SGD importa e exibe painéis do **SGS - Sistema de Gestão de Relatórios**, u
   - `urls.py`: Configuração de rotas principais
   - `wsgi.py` e `asgi.py`: Servidores de aplicação
 - **dashboard/**: App Django para gerenciamento de dashboards
-  - `models.py`: Modelos Dashboard e Dashboard_Config
-  - `views.py`: Views do slideshow e API
+  - `models.py`: Modelos Dashboard, Dashboard_Config e VendaAtualizacao
   - `admin.py`: Configuração do Django Admin
-  - `urls.py`: Rotas do app
-  - `templates/`: Templates HTML do slideshow
+- **pages/**: Páginas Streamlit
+  - `01_🎬_Slideshow.py`: Página principal de exibição de dashboards
+  - `02_⚙️_Gerenciar.py`: Página de gerenciamento de dashboards
+- **imagens/**: Imagens temporárias dos dashboards (será removido na Fase 3)
+  - `meta_mes.png`
+  - `metricas_de_vendas.png`
+  - `ranking_vendedores.png`
+  - `ranking_produtos.png`
 - **documentacao/**: Documentação do projeto
   - `CLAUDE.md`: Este arquivo
   - `Historico.md`: Histórico de interações
   - `Planejamento_SGD.md`: Roadmap do projeto
 - **venv/**: Ambiente virtual Python
-- **requirements.txt**: Dependências do projeto (Django, psycopg2-binary, etc.)
+- **app.py**: Aplicação principal Streamlit (auto-redirect para slideshow)
+- **django_setup.py**: Configuração standalone do Django para Streamlit
+- **requirements.txt**: Dependências do projeto (Django, Streamlit, psycopg2-binary, etc.)
 
 ## Comandos de Desenvolvimento
 
@@ -69,12 +76,25 @@ deactivate
 ```
 
 ### Execução da Aplicação
+
+**Streamlit (Interface Principal)**
 ```bash
-# Executar servidor de desenvolvimento
+# Executar aplicação Streamlit na porta padrão do projeto
+streamlit run app.py --server.port 8001
+
+# A aplicação abre automaticamente na página de slideshow
+# Acesso: http://localhost:8001
+```
+
+**Django Admin (Gerenciamento de Dados)**
+```bash
+# Executar servidor Django admin
 python manage.py runserver
 
-# Executar em porta específica (8001 conforme padrão do projeto)
-python manage.py runserver 8001
+# Executar em porta específica
+python manage.py runserver 8000
+
+# Acesso ao admin: http://localhost:8000/admin
 ```
 
 ### Migrações de Banco de Dados
@@ -142,9 +162,47 @@ python manage.py shell
 - Ordem (IntegerField) - ordem de exibição
 - Duracao (IntegerField) - duração em segundos
 
+**VendaAtualizacao:** (tabela existente, managed=False)
+- Data (CharField, 255 caracteres)
+- Hora (CharField, 255 caracteres)
+- Periodo (CharField, 255 caracteres)
+- Inseridos (CharField, 255 caracteres)
+- Atualizados (CharField, 255 caracteres)
+- **Observação**: Tabela existente no banco, não gerenciada pelo Django
+
 ### Observações:
 - Sempre verificar se um modelo já existe antes de criar migrações
 - Modelos existentes não devem gerar novas migrações (ver Diretrizes de Codificação)
+- Modelos com `managed = False` não criam/alteram tabelas no banco
+
+## Funcionalidades Implementadas
+
+### Interface Streamlit (Fase 2 - Concluída)
+
+**Página de Slideshow (`pages/01_🎬_Slideshow.py`):**
+- Auto-rotação de dashboards baseada em duração configurável
+- Tela cheia sem distrações (sem header, footer, sidebar)
+- Background preto para exibição profissional
+- Transições suaves com fadeIn animation
+- Exibição de imagens temporárias (será substituído por dashboards reais)
+- Botão de engrenagem fixo (topo direito) para acessar gerenciamento
+- Painel de rodapé fixo com:
+  - Período de vendas (VendaAtualizacao.Periodo)
+  - Data e hora de atualização (VendaAtualizacao.Data + Hora)
+
+**Página de Gerenciamento (`pages/02_⚙️_Gerenciar.py`):**
+- Painel "Ordem Atual" mostrando sequência de exibição
+- Controles para cada dashboard:
+  - Alterar ordem de exibição (com reordenação automática)
+  - Alterar duração em segundos
+  - Ativar/desativar dashboard
+- Interface com Pandas DataFrame estilizado
+- Botão "Voltar ao Slideshow" no topo
+
+**Sistema de Normalização de Nomes:**
+- Converte nomes de dashboards para nomes de arquivo
+- Remove acentos e substitui espaços por underscore
+- Exemplo: "Métricas de Vendas" → "metricas_de_vendas.png"
 
 ## Dependências
 
@@ -158,3 +216,11 @@ pip install -r requirements.txt
 pip install <pacote>
 pip freeze > requirements.txt
 ```
+
+**Principais Dependências:**
+- Django 5.2.7
+- Streamlit 1.50.0
+- streamlit-autorefresh 1.0.1
+- psycopg2-binary 2.9.11
+- pandas 2.3.3
+- black, isort, mypy, rich (ferramentas de desenvolvimento)

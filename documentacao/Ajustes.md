@@ -13,6 +13,12 @@
 
 - Ajuste **requirements.txt**
 
+### **17:05 - Commit 02**
+
+- Implementado:
+    - Painel de **Informações de Atualização**
+    - **Imagens** dos **Dashboards Reais**
+
 **dd/mm/aaaa**
 
 - #### ***Instalar requirements.txt***
