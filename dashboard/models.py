@@ -65,3 +65,22 @@ class VendaAtualizacao(models.Model):
 
     def __str__(self):
         return f"{self.Periodo} - {self.Data} {self.Hora}"
+
+
+class VendaConfiguracao(models.Model):
+    """
+    Modelo para armazenar configurações de vendas.
+    Tabela existente no banco de dados (não gera migração).
+    """
+
+    class Meta:
+        db_table = "VendaConfiguracao"
+        managed = False  # Tabela já existe, Django não deve gerenciá-la
+        verbose_name = "Venda Configuração"
+        verbose_name_plural = "Vendas Configurações"
+
+    Descricao = models.CharField(max_length=255, verbose_name="Descrição")
+    Valor = models.CharField(max_length=255, verbose_name="Valor")
+
+    def __str__(self):
+        return f"{self.Descricao} - {self.Valor}"

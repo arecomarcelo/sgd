@@ -1515,3 +1515,203 @@ Atualizações realizadas:
 
 ---
 
+## 📅 28/10/2025
+
+### ⏰ 08:52 - Implementação do Campo Meta no Módulo Gerenciar Dashboards
+
+#### 📝 O que foi pedido:
+1. Adicionar campo de texto para atualizar Meta no Módulo "⚙️ Gerenciar Dashboards"
+2. Posicionar o campo antes da seção "📊 Ordem Atual"
+3. Atualizar o valor na tabela VendaConfiguracao
+4. Buscar registro onde Descricao = "Meta" e atualizar o campo Valor
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Modelo VendaConfiguracao 📊**
+- ✅ Adicionado novo modelo em `/dashboard/models.py`
+- ✅ Configurado com `managed = False` (tabela já existe no banco)
+- ✅ Campos: Descricao (CharField 255), Valor (CharField 255)
+- ✅ Estrutura da tabela verificada no banco PostgreSQL
+
+**Estrutura do Modelo:**
+```python
+class VendaConfiguracao(models.Model):
+    """
+    Modelo para armazenar configurações de vendas.
+    Tabela existente no banco de dados (não gera migração).
+    """
+    class Meta:
+        db_table = "VendaConfiguracao"
+        managed = False  # Tabela já existe
+
+    Descricao = models.CharField(max_length=255)
+    Valor = models.CharField(max_length=255)
+```
+
+**2. Seção Meta de Vendas 🎯**
+- ✅ Adicionada nova seção "🎯 Meta de Vendas"
+- ✅ Posicionada antes da seção "📊 Ordem Atual"
+- ✅ Layout responsivo com 2 colunas (campo texto + botão)
+- ✅ Campo de texto com placeholder e tooltip descritivo
+- ✅ Botão "💾 Salvar Meta" com tooltip
+
+**Layout Implementado:**
+```python
+# Buscar valor atual da meta
+config_meta = VendaConfiguracao.objects.get(Descricao="Meta")
+valor_meta_atual = config_meta.Valor
+
+# Layout em colunas [3, 1]
+col_meta1, col_meta2 = st.columns([3, 1])
+
+with col_meta1:
+    # Campo de texto para a meta
+    nova_meta = st.text_input(
+        "Valor da Meta",
+        value=valor_meta_atual,
+        placeholder="Digite o valor da meta",
+        help="💡 Digite o valor da meta de vendas"
+    )
+
+with col_meta2:
+    # Botão de salvar
+    if st.button("💾 Salvar Meta", ...):
+        # Atualizar valor no banco
+        config_meta.Valor = nova_meta.strip()
+        config_meta.save()
+        st.success("✅ Meta atualizada com sucesso")
+```
+
+**3. Funcionalidade de Salvamento 💾**
+- ✅ Busca registro na tabela VendaConfiguracao onde Descricao = "Meta"
+- ✅ Atualiza campo Valor com novo valor digitado
+- ✅ Valida entrada (não permite valores vazios)
+- ✅ Exibe mensagens de sucesso/erro
+- ✅ Recarrega página após salvamento (st.rerun())
+- ✅ Tratamento de exceções (DoesNotExist, erros gerais)
+
+**4. Tratamento de Erros ⚠️**
+- ✅ Verifica se configuração "Meta" existe no banco
+- ✅ Exibe warning se não encontrar a configuração
+- ✅ Valida campo não vazio antes de salvar
+- ✅ Captura e exibe erros de banco de dados
+
+#### ✅ Verificações Realizadas:
+- ✅ Tabela VendaConfiguracao existe no banco PostgreSQL
+- ✅ Registro com Descricao="Meta" encontrado (valor atual: 50000000)
+- ✅ Modelo importado corretamente no arquivo Gerenciar.py
+- ✅ Arquivo compilado sem erros de sintaxe
+- ✅ Layout responsivo mantido
+
+#### 🎨 Layout Final da Página:
+```
+⚙️ Gerenciar Dashboards              [🎬 Voltar ao Slideshow]
+────────────────────────────────────────────────────────────
+🎯 Meta de Vendas
+[Valor da Meta: _________]  [💾 Salvar Meta]
+────────────────────────────────────────────────────────────
+📊 Ordem Atual
+[Tabela com ordem, nome e duração]
+────────────────────────────────────────────────────────────
+📋 Dashboards Cadastrados
+[Expanders com configurações...]
+```
+
+#### 🧪 Para Testar:
+```bash
+streamlit run app.py --server.port 8001
+```
+
+1. Acesse o gerenciamento (botão ⚙️)
+2. Veja a nova seção "🎯 Meta de Vendas" no topo ✓
+3. Campo exibe valor atual da meta (50000000) ✓
+4. Digite novo valor e clique em "💾 Salvar Meta" ✓
+5. Sistema valida, salva no banco e recarrega ✓
+
+#### 📦 Imports Adicionados:
+- ✅ `from dashboard.models import VendaConfiguracao`
+
+#### 🔍 Consulta ao Banco Realizada:
+```sql
+-- Estrutura da tabela
+SELECT column_name, data_type
+FROM information_schema.columns
+WHERE table_name = 'VendaConfiguracao'
+
+Resultado:
+- id (bigint)
+- Descricao (character varying)
+- Valor (character varying)
+
+-- Verificação do registro Meta
+SELECT * FROM VendaConfiguracao WHERE Descricao = 'Meta'
+
+Resultado:
+- Meta encontrada com valor: 50000000
+```
+
+#### 📁 Arquivos Alterados ou Criados:
+- ✏️ **ATUALIZADO**: `/dashboard/models.py` (modelo VendaConfiguracao)
+- ✏️ **ATUALIZADO**: `/pages/02_⚙️_Gerenciar.py` (seção Meta de Vendas)
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+
+### ⏰ 09:11 - Reversão de Teste de Layout
+
+#### 📝 O que foi pedido:
+Reverter o teste de layout dos painéis lado a lado e excluir todos os arquivos criados para o teste
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Restauração do Arquivo Original** 🔙
+- ✅ Arquivo `02_⚙️_Gerenciar.py` restaurado do backup
+- ✅ Layout voltou ao estado original (painéis empilhados verticalmente)
+- ✅ Sintaxe validada com sucesso
+
+**2. Limpeza de Arquivos de Teste** 🧹
+- ✅ Arquivo de backup excluído: `02_⚙️_Gerenciar.py.backup`
+- ✅ Plano de reversão excluído: `PLANO_REVERSAO_LAYOUT.md`
+- ✅ Nenhum resíduo do teste permaneceu no projeto
+
+**3. Verificações Realizadas** ✅
+- ✅ Arquivo principal restaurado corretamente (8.0 KB)
+- ✅ Layout original confirmado (painéis separados)
+- ✅ Compilação sem erros
+- ✅ Arquivos de teste removidos completamente
+
+#### 🎨 Layout Atual (Restaurado):
+```
+⚙️ Gerenciar Dashboards              [🎬 Voltar ao Slideshow]
+────────────────────────────────────────────────────────────
+🎯 Meta de Vendas
+[Campo de texto]  [Botão Salvar]
+────────────────────────────────────────────────────────────
+📊 Ordem Atual
+[Tabela com dashboards]
+────────────────────────────────────────────────────────────
+📋 Dashboards Cadastrados
+[Expanders...]
+```
+
+#### ⚙️ Processo de Reversão:
+1. ✅ Backup restaurado via comando `cp`
+2. ✅ Sintaxe validada com `py_compile`
+3. ✅ Arquivo `.backup` removido
+4. ✅ Arquivo `PLANO_REVERSAO_LAYOUT.md` removido
+5. ✅ Verificação final confirmada
+
+#### 💡 Conclusão do Teste:
+- ❌ Layout lado a lado não aprovado
+- ✅ Layout original restaurado com sucesso
+- ✅ Sistema voltou ao estado estável anterior
+- ✅ Nenhum arquivo residual permaneceu
+
+#### 📁 Arquivos Afetados:
+- ✏️ **RESTAURADO**: `/pages/02_⚙️_Gerenciar.py` (layout original)
+- 🗑️ **EXCLUÍDO**: `/pages/02_⚙️_Gerenciar.py.backup`
+- 🗑️ **EXCLUÍDO**: `/documentacao/PLANO_REVERSAO_LAYOUT.md`
+- ✏️ **ATUALIZADO**: `/documentacao/Historico.md`
+
+---
+

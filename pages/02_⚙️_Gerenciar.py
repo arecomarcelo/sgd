@@ -9,7 +9,7 @@ import streamlit as st
 import django_setup  # Configura Django ORM
 
 # Importa os modelos Django
-from dashboard.models import Dashboard, Dashboard_Config
+from dashboard.models import Dashboard, Dashboard_Config, VendaConfiguracao
 
 st.set_page_config(page_title="Gerenciar Dashboards", page_icon="⚙️", layout="wide")
 
@@ -21,6 +21,55 @@ with col_button:
     st.write("")  # Espaçamento vertical
     if st.button("🎬 Voltar ao Slideshow", key="btn_voltar"):
         st.switch_page("pages/01_🎬_Slideshow.py")
+
+st.markdown("---")
+
+# Painel de Meta de Vendas
+st.subheader("🎯 Meta de Vendas")
+
+# Buscar valor atual da meta
+try:
+    config_meta = VendaConfiguracao.objects.get(Descricao="Meta")
+    valor_meta_atual = config_meta.Valor
+except VendaConfiguracao.DoesNotExist:
+    valor_meta_atual = "0"
+    st.warning("⚠️ Configuração de Meta não encontrada no banco de dados")
+
+# Layout em colunas para o campo de meta
+col_meta1, col_meta2 = st.columns([3, 1])
+
+with col_meta1:
+    nova_meta = st.text_input(
+        "Valor da Meta",
+        value=valor_meta_atual,
+        placeholder="Digite o valor da meta",
+        help="💡 Digite o valor da meta de vendas",
+        key="input_meta",
+    )
+
+with col_meta2:
+    st.write("")  # Espaçamento vertical para alinhar o botão
+    st.write("")  # Mais espaçamento
+    if st.button(
+        "💾 Salvar Meta",
+        key="btn_salvar_meta",
+        help="Clique para salvar o valor da meta",
+    ):
+        if nova_meta and nova_meta.strip():
+            try:
+                config_meta = VendaConfiguracao.objects.get(Descricao="Meta")
+                config_meta.Valor = nova_meta.strip()
+                config_meta.save()
+                st.success(f"✅ Meta atualizada com sucesso para: {nova_meta}")
+                st.rerun()
+            except VendaConfiguracao.DoesNotExist:
+                st.error(
+                    "❌ Erro: Configuração de Meta não encontrada no banco de dados"
+                )
+            except Exception as e:
+                st.error(f"❌ Erro ao salvar meta: {str(e)}")
+        else:
+            st.warning("⚠️ Por favor, digite um valor válido para a meta")
 
 st.markdown("---")
 
