@@ -45,6 +45,10 @@
 
 - Correção **Exibição Fotos Vendedores**
 
+### **13:35 - Commit 06**
+
+- Ajuste **Background Cards
+
 **dd/mm/aaaa**
 
 - #### ***Instalar requirements.txt***

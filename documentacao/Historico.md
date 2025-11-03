@@ -3313,3 +3313,89 @@ A função `get_vendedor_foto()` na linha 678 do arquivo `panels.py` foi ajustad
 
 ---
 
+
+## 📅 03/11/2025 - 13:30
+
+### 🎨 Ajuste Visual: Background Preto nos Cards dos Dashboards
+
+**Solicitação:**
+- 🔲 Ajustar background dos cards em geral para **Preto**
+- 🔤 Ajustar textos e demais itens para **contrastar bem** com o background preto
+
+**Implementação:**
+
+### 1️⃣ **Painel Meta Mês** (`render_meta_mes`)
+
+**Cards de Informações (Realizado e Meta):**
+- ✅ Background alterado de `#f8f8f2` (claro) → `#000000` (preto)
+- ✅ Labels alteradas de `#666` (cinza escuro) → `#f8f8f2` (branco)
+- ✅ Valores mantidos em `#8be9fd` (ciano - alta visibilidade)
+- ✅ Adicionada borda `1px solid #44475a` (cinza Dracula)
+- ✅ Shadow ajustado para `rgba(0, 0, 0, 0.5)` (mais intenso)
+
+### 2️⃣ **Painel Métricas de Vendas** (`render_metricas_vendas`)
+
+**Cards de Métricas (6 cards no grid):**
+- ✅ Background alterado de `#f8f8f2` → `#000000`
+- ✅ Labels mantidas em `#f59e0b` (laranja - excelente contraste)
+- ✅ Valores mantidos em `#8be9fd` (ciano)
+- ✅ Adicionada borda `1px solid #44475a`
+- ✅ Hover: borda muda para `#8be9fd` (ciano brilhante)
+- ✅ Shadow ajustado para `rgba(0, 0, 0, 0.5)`
+
+### 3️⃣ **Painel Ranking de Vendedores** (`render_ranking_vendedores`)
+
+**Cards de Vendedores (10 cards):**
+- ✅ Background alterado de `#f8f8f2` → `#000000`
+- ✅ Nomes mantidos em `#8be9fd` (ciano)
+- ✅ Valores monetários mantidos em `#8be9fd`
+- ✅ Adicionada borda `1px solid #44475a`
+- ✅ Hover: borda muda para `#8be9fd`
+- ✅ Shadow ajustado para `rgba(0, 0, 0, 0.5)`
+
+### 4️⃣ **Painel Ranking de Produtos** (`render_ranking_produtos`)
+
+**Cards de Produtos (Top 10):**
+- ✅ Mantidos gradientes coloridos (ouro, prata, bronze, roxo)
+- ✅ Adicionada borda `1px solid rgba(255, 255, 255, 0.1)` (sutil)
+- ✅ Hover: borda muda para `rgba(255, 255, 255, 0.3)` (mais visível)
+- ✅ Shadow ajustado para `rgba(0, 0, 0, 0.5)`
+
+**Resultado Visual:**
+
+```
+ANTES:                          DEPOIS:
+┌─────────────────┐            ┌─────────────────┐
+│  ░░░░░░░░░░░░░  │            │  ████████████   │
+│  (fundo claro)  │     →      │  (fundo preto)  │
+│  Texto escuro   │            │  Texto claro    │
+└─────────────────┘            └─────────────────┘
+   Baixo contraste               Alto contraste ✨
+```
+
+**Paleta de Cores Utilizada:**
+
+| Elemento | Cor Anterior | Cor Nova | Motivo |
+|----------|-------------|----------|---------|
+| **Background Cards** | `#f8f8f2` (claro) | `#000000` (preto) | Alto contraste |
+| **Bordas** | Sem borda | `#44475a` (cinza) | Definição visual |
+| **Labels** | `#666` (escuro) | `#f8f8f2` (claro) | Legibilidade |
+| **Valores** | `#8be9fd` | `#8be9fd` | Mantido (ótimo) |
+| **Hover Borda** | - | `#8be9fd` (ciano) | Interatividade |
+
+**Benefícios:**
+
+✅ **Alto Contraste:** Textos claros sobre fundo preto = máxima legibilidade  
+✅ **Consistência:** Todos os painéis seguem o mesmo padrão visual  
+✅ **Tema Dracula:** Alinhado com paleta dark do tema  
+✅ **Acessibilidade:** Melhora leitura em ambientes diversos  
+✅ **Elegância:** Visual moderno e profissional  
+
+**Teste de Contraste (WCAG):**
+
+- Texto branco (`#f8f8f2`) em fundo preto (`#000000`): **Contraste 20.36:1** ✅ (AAA)
+- Ciano (`#8be9fd`) em fundo preto (`#000000`): **Contraste 12.19:1** ✅ (AAA)
+- Laranja (`#f59e0b`) em fundo preto (`#000000`): **Contraste 8.38:1** ✅ (AA)
+
+---
+

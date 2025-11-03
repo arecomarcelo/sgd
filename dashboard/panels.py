@@ -122,7 +122,7 @@ def render_meta_mes(theme='dark'):
         bg_color = "#1a1d2e"  # Background escuro do Dracula
         text_color_primary = "#8be9fd"  # Ciano
         text_color_secondary = "#6272a4"  # Comentário
-        card_bg = "#f8f8f2"  # Branco/bege claro
+        card_bg = "#000000"  # Preto para cards
         progress_bar_bg = "#f8f8f2"  # Barra branca
         cor_realizado = "#8be9fd"  # Ciano para progresso
         cor_faltando = "#44475a"  # Cinza do Dracula
@@ -130,7 +130,7 @@ def render_meta_mes(theme='dark'):
         bg_color = "#f0f0f0"
         text_color_primary = "#1a73e8"
         text_color_secondary = "#5f6368"
-        card_bg = "#ffffff"
+        card_bg = "#000000"  # Preto para cards
         progress_bar_bg = "#ffffff"
         cor_realizado = "#4285f4"
         cor_faltando = "#e8eaed"
@@ -235,10 +235,11 @@ def render_meta_mes(theme='dark'):
                     border-radius: 16px;
                     padding: 20px 40px;
                     text-align: center;
-                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+                    border: 1px solid #44475a;
                 }}
                 .info-label {{
-                    color: #666;
+                    color: #f8f8f2;
                     font-size: 1rem;
                     font-weight: 600;
                     margin-bottom: 8px;
@@ -357,13 +358,13 @@ def render_metricas_vendas(theme='dark'):
     if theme == 'dark':
         bg_color = "#1a1d2e"  # Background escuro
         text_color_primary = "#8be9fd"  # Ciano
-        card_bg = "#f8f8f2"  # Branco/bege claro
+        card_bg = "#000000"  # Preto para cards
         btn_bg = "#44475a"  # Cinza do Dracula
         btn_text = "#f8f8f2"  # Texto claro
     else:
         bg_color = "#f0f0f0"
         text_color_primary = "#1a73e8"
-        card_bg = "#ffffff"
+        card_bg = "#000000"  # Preto para cards
         btn_bg = "#ffffff"
         btn_text = "#1a73e8"
 
@@ -419,7 +420,8 @@ def render_metricas_vendas(theme='dark'):
                     border-radius: 20px;
                     padding: 40px 30px;
                     text-align: center;
-                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+                    border: 1px solid #44475a;
                     transition: transform 0.2s ease, box-shadow 0.2s ease;
                     min-height: 160px;
                     display: flex;
@@ -428,7 +430,8 @@ def render_metricas_vendas(theme='dark'):
                 }}
                 .metric-card:hover {{
                     transform: translateY(-5px);
-                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+                    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+                    border-color: #8be9fd;
                 }}
                 .metric-label {{
                     color: #f59e0b;
@@ -696,11 +699,11 @@ def render_ranking_vendedores(theme='dark'):
     if theme == 'dark':
         bg_color = "#1a1d2e"
         text_color_primary = "#8be9fd"
-        card_bg = "#f8f8f2"
+        card_bg = "#000000"  # Preto para cards
     else:
         bg_color = "#f0f0f0"
         text_color_primary = "#1a73e8"
-        card_bg = "#ffffff"
+        card_bg = "#000000"  # Preto para cards
 
     # Gerar HTML dos cards
     cards_html = ""
@@ -807,7 +810,8 @@ def render_ranking_vendedores(theme='dark'):
                     border-radius: 16px;
                     padding: 20px 15px;
                     text-align: center;
-                    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+                    border: 1px solid #44475a;
                     transition: transform 0.2s ease, box-shadow 0.2s ease;
                     min-width: 0;
                     display: flex;
@@ -816,7 +820,8 @@ def render_ranking_vendedores(theme='dark'):
                 }}
                 .vendedor-card:hover {{
                     transform: translateY(-4px);
-                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.7);
+                    border-color: #8be9fd;
                 }}
                 .vendedor-avatar {{
                     width: 85px;
@@ -1120,7 +1125,8 @@ def render_ranking_produtos(theme='dark'):
                 .produto-card {{
                     border-radius: 16px;
                     padding: 20px 15px;
-                    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+                    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
                     transition: transform 0.3s ease, box-shadow 0.3s ease;
                     color: white;
                     display: flex;
@@ -1129,7 +1135,8 @@ def render_ranking_produtos(theme='dark'):
                 }}
                 .produto-card:hover {{
                     transform: translateY(-5px);
-                    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+                    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.7);
+                    border-color: rgba(255, 255, 255, 0.3);
                 }}
                 .produto-rank {{
                     font-size: 2.3rem;
