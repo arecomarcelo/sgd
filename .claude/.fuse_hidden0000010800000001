@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/docx_temp/word/**)",
+      "Bash(fold:*)",
+      "Bash(cat:*)",
+      "Bash(python manage.py:*)",
+      "Bash(source venv/bin/activate)",
+      "Bash(pip install:*)",
+      "Bash(find:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(git checkout:*)",
+      "Bash(streamlit run:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -41,6 +41,10 @@
 
 - Implementada **Exibição Real Dasboads**
 
+### **13:09 - Commit 05**
+
+- Correção **Exibição Fotos Vendedores**
+
 **dd/mm/aaaa**
 
 - #### ***Instalar requirements.txt***

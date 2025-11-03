@@ -677,7 +677,8 @@ def render_ranking_vendedores(theme='dark'):
     # Função para carregar foto em base64
     def get_vendedor_foto(foto_id):
         """Carrega foto do vendedor em base64"""
-        fotos_dir = Path("/media/areco/Backup/Oficial/Projetos/sgd/imagens/fotos")
+        # Usar caminho relativo para funcionar em qualquer ambiente
+        fotos_dir = Path("imagens/fotos")
 
         # Tentar .jpg primeiro, depois .png
         for ext in ['.jpg', '.png']:

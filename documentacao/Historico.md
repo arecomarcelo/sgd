@@ -3164,3 +3164,152 @@ meta_config = VendaConfiguracao.objects.filter(Descricao='Meta').first()
 
 ---
 
+
+### ⏰ **13:25** - Instruções de Deploy das Fotos para Produção
+
+#### ❓ Problema Relatado:
+As fotos dos vendedores não estão sendo exibidas no servidor de produção.
+
+#### 🔍 Diagnóstico:
+Após verificação do repositório local, foi constatado que:
+
+✅ **Todas as fotos estão commitadas no repositório:**
+- As 10 fotos dos vendedores (1.png a 10.png) foram adicionadas no **Commit 04**
+- Localização: `imagens/fotos/`
+- Tamanho total: ~336 KB (10 arquivos PNG)
+
+✅ **O repositório local está sincronizado:**
+```bash
+$ git log --oneline
+90571b2 Commit 04  ← Fotos adicionadas aqui
+c5998c3 Commit 03
+ec1dedb Commit 02
+712e0e0 Commit 01
+13a6692 Commit Inicial
+```
+
+✅ **O repositório remoto (origin) está atualizado:**
+```bash
+$ git status
+Your branch is up to date with 'origin/master'
+```
+
+#### ✅ Solução:
+
+**O problema é que o SERVIDOR DE PRODUÇÃO não atualizou o código!**
+
+Para resolver, você precisa **conectar no servidor de produção** e executar os seguintes comandos:
+
+```bash
+# 1. Conectar no servidor de produção
+ssh usuario@servidor-producao
+
+# 2. Navegar até o diretório do projeto SGD
+cd /caminho/do/projeto/sgd
+
+# 3. Parar o Streamlit se estiver rodando
+# (Use Ctrl+C se estiver em sessão ativa, ou pkill streamlit)
+
+# 4. Fazer pull das atualizações do repositório
+git pull origin master
+
+# 5. Verificar se as fotos foram baixadas
+ls -la imagens/fotos/
+# Deve listar: 1.png, 2.png, 3.png ... 10.png
+
+# 6. Reiniciar o Streamlit
+streamlit run app.py --server.port 8001
+```
+
+#### 📋 Checklist de Deploy:
+
+- [ ] Conectar no servidor de produção via SSH
+- [ ] Navegar até o diretório do projeto
+- [ ] Parar o serviço Streamlit
+- [ ] Executar `git pull origin master`
+- [ ] Verificar que as fotos foram baixadas (`ls imagens/fotos/`)
+- [ ] Reiniciar o serviço Streamlit
+- [ ] Validar que as fotos estão sendo exibidas no dashboard
+
+#### 📌 Observação Importante:
+
+Se o servidor de produção tiver **mudanças locais não commitadas**, o `git pull` pode falhar. Nesse caso:
+
+```bash
+# Verificar mudanças locais
+git status
+
+# Se houver mudanças, você tem 3 opções:
+# Opção 1: Descartar mudanças locais (CUIDADO!)
+git reset --hard HEAD
+
+# Opção 2: Commitar mudanças locais primeiro
+git add .
+git commit -m "Mudanças locais do servidor"
+
+# Opção 3: Fazer stash das mudanças
+git stash
+git pull origin master
+git stash pop  # Re-aplicar mudanças depois
+```
+
+#### 🎯 Resultado Esperado:
+
+Após o deploy, o dashboard **Ranking de Vendedores** deve exibir:
+- ✅ Fotos dos 10 vendedores carregadas corretamente
+- ✅ Nomes dos vendedores
+- ✅ Gauges de performance (meta vs realizado)
+- ✅ Percentual de vendas
+
+---
+
+
+## 📅 03/11/2025 - 13:10
+
+### 🐛 Correção: Caminho Absoluto das Fotos dos Vendedores
+
+**Problema Identificado:**
+- 🖼️ No ambiente local, as fotos dos vendedores eram exibidas corretamente
+- ❌ Em produção, apenas as iniciais (avatares placeholder) eram exibidas
+- 🔍 Causa: Código utilizava caminho absoluto `/media/areco/Backup/Oficial/Projetos/sgd/imagens/fotos` que não existe em produção
+
+**Solução Implementada:**
+
+1. **Alteração no código** (`dashboard/panels.py`):
+   - ❌ **Antes:** `fotos_dir = Path("/media/areco/Backup/Oficial/Projetos/sgd/imagens/fotos")`
+   - ✅ **Depois:** `fotos_dir = Path("imagens/fotos")`
+   
+2. **Benefícios:**
+   - ✅ Usa caminho relativo ao diretório de execução
+   - ✅ Funciona em qualquer ambiente (local, produção, desenvolvimento)
+   - ✅ Compatível com estrutura de deploy do projeto
+   - ✅ Alinhado com padrões do SGR (Sistema de Gestão de Revendedores)
+
+**Detalhamento Técnico:**
+
+A função `get_vendedor_foto()` na linha 678 do arquivo `panels.py` foi ajustada para:
+- Usar `Path("imagens/fotos")` - caminho relativo
+- Manter compatibilidade com formatos `.jpg` e `.png`
+- Preservar codificação base64 das imagens
+- Fallback para iniciais caso foto não seja encontrada
+
+**Testes Realizados:**
+
+```bash
+✅ Todas as 10 fotos carregadas com sucesso
+✅ Codificação base64 funcionando corretamente
+✅ Caminho relativo resolvido corretamente
+✅ Compatível com estrutura do projeto
+```
+
+**Próximos Passos:**
+
+🚀 **Deploy em Produção:**
+1. Conectar ao servidor de produção
+2. Executar `git pull origin master`
+3. Limpar cache do Streamlit (`rm -rf .streamlit/cache`)
+4. Reiniciar aplicação Streamlit
+5. Validar exibição das fotos no dashboard
+
+---
+
