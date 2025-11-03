@@ -4,15 +4,30 @@ Exibe os dashboards em rotação automática com transição suave
 """
 
 import os
+import time
 from pathlib import Path
 
 import streamlit as st
+import streamlit.components.v1 as components
 from streamlit_autorefresh import st_autorefresh
 
 import django_setup  # Configura Django ORM
 
 # Importa os modelos Django
-from dashboard.models import Dashboard, Dashboard_Config, VendaAtualizacao
+from dashboard.models import (
+    Dashboard,
+    Dashboard_Config,
+    Dashboard_Log,
+    VendaAtualizacao,
+)
+
+# Importa os painéis customizados
+from dashboard.panels import (
+    render_meta_mes,
+    render_metricas_vendas,
+    render_ranking_produtos,
+    render_ranking_vendedores,
+)
 
 st.set_page_config(
     page_title="Slideshow",
@@ -21,36 +36,106 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+# Ler ação do localStorage (JavaScript → Python)
+action = components.html(
+    """
+    <script>
+        const action = localStorage.getItem('slideshow_action');
+        if (action) {
+            localStorage.removeItem('slideshow_action');
+            window.parent.postMessage({type: 'streamlit:setComponentValue', value: action}, '*');
+        } else {
+            window.parent.postMessage({type: 'streamlit:setComponentValue', value: null}, '*');
+        }
+    </script>
+    """,
+    height=0,
+)
+
+# Inicializar tema se não existir
+if 'theme' not in st.session_state:
+    st.session_state.theme = 'dark'  # Tema padrão: escuro
+
+# Inicializar controles de tempo e pausa
+if 'start_time' not in st.session_state:
+    st.session_state.start_time = time.time()
+
+if 'is_paused' not in st.session_state:
+    st.session_state.is_paused = False
+
+# Armazenar última ação para debug
+if 'last_action' not in st.session_state:
+    st.session_state.last_action = "Nenhuma ação ainda"
+
+# Processar ação do localStorage
+if action:
+    if action == 'toggle_theme':
+        st.session_state.last_action = "🎨 TEMA ALTERNADO"
+        st.session_state.theme = 'light' if st.session_state.theme == 'dark' else 'dark'
+        st.rerun()
+    elif action == 'prev':
+        st.session_state.last_action = "⏮️ VOLTAR (aguardando processamento)"
+        # Será processado depois que dashboards_config estiver disponível
+        if 'action_prev' not in st.session_state:
+            st.session_state.action_prev = True
+    elif action == 'next':
+        st.session_state.last_action = "⏭️ AVANÇAR (aguardando processamento)"
+        # Será processado depois que dashboards_config estiver disponível
+        if 'action_next' not in st.session_state:
+            st.session_state.action_next = True
+    elif action == 'toggle_pause':
+        st.session_state.is_paused = not st.session_state.is_paused
+        if st.session_state.is_paused:
+            st.session_state.last_action = "⏸️ PAUSADO"
+        else:
+            st.session_state.last_action = "▶️ CONTINUANDO"
+            st.session_state.start_time = time.time()
+        st.rerun()
+
+# Definir cores baseadas no tema
+if st.session_state.theme == 'dark':
+    bg_color = '#000000'
+    text_color = '#ffffff'
+    card_bg = 'rgba(255, 255, 255, 0.1)'
+    border_color = 'rgba(255, 255, 255, 0.3)'
+    footer_bg = 'rgba(0, 0, 0, 0.8)'
+else:  # light
+    bg_color = '#f0f0f0'
+    text_color = '#000000'
+    card_bg = 'rgba(0, 0, 0, 0.1)'
+    border_color = 'rgba(0, 0, 0, 0.3)'
+    footer_bg = 'rgba(255, 255, 255, 0.9)'
+
 # Estilo CSS customizado
 st.markdown(
-    """
+    f"""
 <style>
     /* Esconde header, footer e sidebar do Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    [data-testid="stSidebar"] {display: none;}
+    #MainMenu {{visibility: hidden;}}
+    footer {{visibility: hidden;}}
+    header {{visibility: hidden;}}
+    [data-testid="stSidebar"] {{display: none;}}
 
     /* Remove padding e margens do container principal */
-    .block-container {
+    .block-container {{
         padding: 0 !important;
         max-width: 100% !important;
-    }
+    }}
 
     /* Remove scrollbars */
-    html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {
+    html, body, [data-testid="stAppViewContainer"], [data-testid="stApp"] {{
         overflow: hidden !important;
         height: 100vh !important;
         margin: 0 !important;
         padding: 0 !important;
-    }
+    }}
 
     /* Estilo do card do dashboard - ocupa toda a tela */
-    .dashboard-card {
-        background: #000000;
+    .dashboard-card {{
+        background: {bg_color};
         padding: 0;
         text-align: center;
-        color: white;
+        color: {text_color};
         height: 100vh;
         width: 100vw;
         display: flex;
@@ -62,44 +147,44 @@ st.markdown(
         top: 0;
         left: 0;
         box-sizing: border-box;
-    }
+    }}
 
-    @keyframes fadeIn {
-        from {
+    @keyframes fadeIn {{
+        from {{
             opacity: 0;
             transform: scale(0.95);
-        }
-        to {
+        }}
+        to {{
             opacity: 1;
             transform: scale(1);
-        }
-    }
+        }}
+    }}
 
-    .dashboard-title {
+    .dashboard-title {{
         font-size: 4rem;
         font-weight: bold;
         margin-bottom: 30px;
         text-transform: uppercase;
         letter-spacing: 2px;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    }
+    }}
 
-    .dashboard-description {
+    .dashboard-description {{
         font-size: 2rem;
         margin-bottom: 40px;
         line-height: 1.6;
-    }
+    }}
 
-    .dashboard-info {
+    .dashboard-info {{
         background: rgba(255, 255, 255, 0.2);
         padding: 20px 40px;
         border-radius: 50px;
         font-size: 1.5rem;
         margin-top: 20px;
-    }
+    }}
 
     /* Estilo para imagem centralizada em tela cheia */
-    .dashboard-image-container {
+    .dashboard-image-container {{
         width: 100vw;
         height: 100vh;
         display: flex;
@@ -108,11 +193,11 @@ st.markdown(
         position: fixed;
         top: 0;
         left: 0;
-        background: #000000;
-    }
+        background: {bg_color};
+    }}
 
     /* Ajusta a imagem para tela cheia centralizada */
-    .stImage {
+    .stImage {{
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
@@ -121,9 +206,9 @@ st.markdown(
         position: fixed !important;
         top: 0 !important;
         left: 0 !important;
-    }
+    }}
 
-    .stImage img {
+    .stImage img {{
         max-width: 95vw !important;
         max-height: 85vh !important;
         width: auto !important;
@@ -131,20 +216,20 @@ st.markdown(
         object-fit: contain !important;
         margin: 0 auto !important;
         display: block !important;
-    }
+    }}
 
     /* Botão de engrenagem fixo - Container Streamlit */
-    div[data-testid="stVerticalBlock"] > div:has(button[kind="secondary"]) {
+    div[data-testid="stVerticalBlock"] > div:has(button[kind="secondary"]) {{
         position: fixed !important;
         top: 20px !important;
         right: 20px !important;
         z-index: 99999 !important;
         width: 60px !important;
         height: 60px !important;
-    }
+    }}
 
     /* Estilo do botão de engrenagem */
-    button[kind="secondary"] {
+    button[kind="secondary"] {{
         width: 60px !important;
         height: 60px !important;
         background: rgba(255, 255, 255, 0.9) !important;
@@ -156,27 +241,27 @@ st.markdown(
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
-    }
+    }}
 
-    button[kind="secondary"]:hover {
+    button[kind="secondary"]:hover {{
         background: rgba(255, 255, 255, 1) !important;
         transform: scale(1.1) rotate(90deg) !important;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
-    }
+    }}
 
-    button[kind="secondary"] p {
+    button[kind="secondary"] p {{
         font-size: 30px !important;
         margin: 0 !important;
         line-height: 1 !important;
-    }
+    }}
 
     /* Painel fixo no rodapé */
-    .footer-panel {
+    .footer-panel {{
         position: fixed !important;
         bottom: 0 !important;
         left: 0 !important;
         right: 0 !important;
-        background: rgba(0, 0, 0, 0.8) !important;
+        background: {footer_bg} !important;
         backdrop-filter: blur(10px) !important;
         padding: 15px 30px !important;
         z-index: 9999 !important;
@@ -184,32 +269,63 @@ st.markdown(
         justify-content: center !important;
         align-items: center !important;
         gap: 40px !important;
-        border-top: 2px solid rgba(255, 255, 255, 0.1) !important;
-    }
+        border-top: none !important;
+    }}
 
-    .footer-card {
-        background: rgba(255, 255, 255, 0.1) !important;
+    .footer-card {{
+        background: {card_bg} !important;
         padding: 12px 30px !important;
         border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border: 1px solid {border_color} !important;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-    }
+    }}
 
-    .footer-label {
-        color: rgba(255, 255, 255, 0.7) !important;
+    .footer-label {{
+        color: {text_color} !important;
+        opacity: 0.7 !important;
         font-size: 0.9rem !important;
         margin-bottom: 5px !important;
         font-weight: 500 !important;
         text-transform: uppercase !important;
         letter-spacing: 1px !important;
-    }
+    }}
 
-    .footer-value {
-        color: white !important;
+    .footer-value {{
+        color: {text_color} !important;
         font-size: 1.3rem !important;
         font-weight: bold !important;
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5) !important;
-    }
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3) !important;
+    }}
+
+    /* Botões HTML customizados no rodapé */
+    .footer-button {{
+        width: 50px !important;
+        height: 50px !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        border-radius: 50% !important;
+        border: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        transition: all 0.3s ease !important;
+        cursor: pointer !important;
+        font-size: 24px !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        padding: 0 !important;
+    }}
+
+    .footer-button:hover {{
+        background: rgba(255, 255, 255, 1) !important;
+        transform: scale(1.1) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+    }}
+
+    .footer-controls {{
+        display: flex !important;
+        gap: 15px !important;
+        align-items: center !important;
+    }}
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -229,52 +345,83 @@ if not dashboards_config.exists():
 
 # Inicializar estado da sessão
 if 'current_index' not in st.session_state:
-    st.session_state.current_index = 0
+    st.session_state.current_index = (
+        0  # 0=Meta Mês, 1=Métricas, 2=Ranking Vendedores, 3=Ranking Produtos
+    )
 
 # Obter dashboard atual
 total_dashboards = dashboards_config.count()
+
+# Processar ações de navegação (prev/next) do localStorage
+if 'action_prev' in st.session_state and st.session_state.action_prev:
+    st.session_state.current_index = (
+        st.session_state.current_index - 1
+    ) % total_dashboards
+    st.session_state.start_time = time.time()
+    st.session_state.is_paused = False
+    st.session_state.last_action = (
+        f"⏮️ VOLTOU para slide {st.session_state.current_index + 1}/{total_dashboards}"
+    )
+    del st.session_state.action_prev
+    st.rerun()
+
+if 'action_next' in st.session_state and st.session_state.action_next:
+    st.session_state.current_index = (
+        st.session_state.current_index + 1
+    ) % total_dashboards
+    st.session_state.start_time = time.time()
+    st.session_state.is_paused = False
+    st.session_state.last_action = (
+        f"⏭️ AVANÇOU para slide {st.session_state.current_index + 1}/{total_dashboards}"
+    )
+    del st.session_state.action_next
+    st.rerun()
+
 current_config = list(dashboards_config)[st.session_state.current_index]
 current_dashboard = current_config.Dashboard
 duracao = current_config.Duracao
 
-# Auto-refresh baseado na duração
-count = st_autorefresh(interval=duracao * 1000, key="slideshow_refresh")
+# Auto-refresh baseado na duração (somente se não estiver pausado)
+if not st.session_state.is_paused:
+    count = st_autorefresh(interval=duracao * 1000, key="slideshow_refresh")
 
-# Avançar para próximo slide
-if count > 0:
-    st.session_state.current_index = (
-        st.session_state.current_index + 1
-    ) % total_dashboards
+    # Avançar para próximo slide
+    if count > 0:
+        st.session_state.current_index = (
+            st.session_state.current_index + 1
+        ) % total_dashboards
+        st.session_state.start_time = time.time()  # Reiniciar o timer
 
-# Buscar imagem de teste (temporário)
-# Converte nome do dashboard para nome de arquivo
-# Exemplo: "Meta Mês" -> "meta_mes.png"
-nome_dashboard_normalizado = (
-    current_dashboard.Nome.lower()
-    .replace(' ', '_')
-    .replace('ê', 'e')
-    .replace('é', 'e')
-    .replace('á', 'a')
-    .replace('í', 'i')
-    .replace('ó', 'o')
-    .replace('ú', 'u')
-    .replace('ã', 'a')
-    .replace('õ', 'o')
-    .replace('ç', 'c')
-)
-imagem_path = Path(f"imagens/{nome_dashboard_normalizado}.png")
+# Renderizar painel dinâmico baseado no nome do dashboard
+# Normalizar removendo acentos para comparação
+import unicodedata
 
-# Exibir dashboard com imagem (se existir)
-if imagem_path.exists():
-    # Layout com imagem em tela cheia, sem painéis
-    st.markdown(
-        '<div class="dashboard-image-container">',
-        unsafe_allow_html=True,
-    )
-    st.image(str(imagem_path))
-    st.markdown('</div>', unsafe_allow_html=True)
+
+def remover_acentos(texto):
+    """Remove acentos de uma string"""
+    nfkd = unicodedata.normalize('NFKD', texto)
+    return ''.join([c for c in nfkd if not unicodedata.combining(c)])
+
+
+nome_dashboard_normalizado = remover_acentos(current_dashboard.Nome.lower())
+
+# Mapeamento de dashboards para funções de renderização
+if 'meta' in nome_dashboard_normalizado and 'mes' in nome_dashboard_normalizado:
+    render_meta_mes(theme=st.session_state.theme)
+elif (
+    'metrica' in nome_dashboard_normalizado or 'metricas' in nome_dashboard_normalizado
+):
+    render_metricas_vendas(theme=st.session_state.theme)
+elif (
+    'ranking' in nome_dashboard_normalizado and 'vendedor' in nome_dashboard_normalizado
+):
+    render_ranking_vendedores(theme=st.session_state.theme)
+elif (
+    'ranking' in nome_dashboard_normalizado and 'produto' in nome_dashboard_normalizado
+):
+    render_ranking_produtos(theme=st.session_state.theme)
 else:
-    # Layout sem imagem (original)
+    # Fallback: exibir card simples se não houver painel específico
     st.markdown(
         f"""
     <div class="dashboard-card">
@@ -293,6 +440,10 @@ try:
 except VendaAtualizacao.DoesNotExist:
     periodo = "N/A"
     data_atualizacao = "N/A"
+
+# Ícone do botão de tema baseado no estado atual
+tema_icon = "☀️" if st.session_state.theme == 'dark' else "🌙"
+pause_icon = "⏸️" if not st.session_state.is_paused else "▶️"
 
 # Painel fixo no rodapé com informações de atualização
 st.markdown(

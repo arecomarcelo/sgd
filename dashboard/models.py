@@ -84,3 +84,175 @@ class VendaConfiguracao(models.Model):
 
     def __str__(self):
         return f"{self.Descricao} - {self.Valor}"
+
+
+class Dashboard_Log(models.Model):
+    """
+    Novo Modelo para registrar logs de exibição de dashboards (auditoria).
+    Registra quando cada dashboard foi exibido e por quanto tempo.
+    """
+
+    class Meta:
+        db_table = "Dashboard_Log"
+        ordering = ["-DataHora_Inicio"]
+        verbose_name = "Dashboard Log"
+        verbose_name_plural = "Dashboard Logs"
+
+    Dashboard = models.ForeignKey(
+        Dashboard, on_delete=models.CASCADE, verbose_name="Dashboard"
+    )
+    DataHora_Inicio = models.DateTimeField(
+        auto_now_add=True, verbose_name="Data/Hora Início"
+    )
+    DataHora_Fim = models.DateTimeField(
+        null=True, blank=True, verbose_name="Data/Hora Fim"
+    )
+    Duracao_Exibida = models.IntegerField(
+        null=True, blank=True, verbose_name="Duração Exibida (segundos)"
+    )
+    Tipo_Transicao = models.CharField(
+        max_length=20,
+        choices=[
+            ("automatica", "Automática"),
+            ("manual", "Manual"),
+            ("pausa", "Pausado"),
+        ],
+        default="automatica",
+        verbose_name="Tipo de Transição",
+    )
+
+    def __str__(self):
+        return f"{self.Dashboard.Nome} - {self.DataHora_Inicio.strftime('%d/%m/%Y %H:%M:%S')}"
+
+
+class Vendas(models.Model):
+    """
+    Modelo para acessar vendas do sistema.
+    Tabela existente no banco de dados (não gera migração).
+    """
+
+    class Meta:
+        db_table = "Vendas"
+        managed = False
+        verbose_name = "Venda"
+        verbose_name_plural = "Vendas"
+
+    id = models.BigAutoField(primary_key=True)
+    id_gestao = models.CharField(db_column="ID_Gestao", max_length=100)
+    codigo = models.CharField(db_column="Codigo", max_length=100)
+    clientenome = models.CharField(db_column="ClienteNome", max_length=100)
+    vendedornome = models.CharField(db_column="VendedorNome", max_length=100)
+    data = models.CharField(db_column="Data", max_length=100)
+    situacaonome = models.CharField(db_column="SituacaoNome", max_length=100)
+    nomecanalvenda = models.CharField(db_column="NomeCanalVenda", max_length=100)
+    condicaopagamento = models.CharField(db_column="CondicaoPagamento", max_length=100)
+    valorcusto = models.CharField(db_column="ValorCusto", max_length=100)
+    valorprodutos = models.CharField(db_column="ValorProdutos", max_length=100)
+    valordesconto = models.CharField(db_column="ValorDesconto", max_length=100)
+    valortotal = models.CharField(db_column="ValorTotal", max_length=100)
+
+    def __str__(self):
+        return f"{self.codigo} - {self.clientenome}"
+
+
+class Vendedores(models.Model):
+    """
+    Modelo para acessar vendedores do sistema.
+    Tabela existente no banco de dados (não gera migração).
+    """
+
+    class Meta:
+        db_table = "Vendedores"
+        managed = False
+        verbose_name = "Vendedor"
+        verbose_name_plural = "Vendedores"
+
+    nome = models.CharField(db_column="Nome", max_length=100)
+
+    def __str__(self):
+        return self.nome
+
+
+class Produtos(models.Model):
+    """
+    Modelo para acessar produtos do sistema.
+    Tabela existente no banco de dados (não gera migração).
+    """
+
+    class Meta:
+        db_table = "Produtos"
+        managed = False
+        verbose_name = "Produto"
+        verbose_name_plural = "Produtos"
+
+    id_gestao = models.CharField(
+        db_column="ID_Gestao", max_length=100, blank=True, null=True
+    )
+    id_loja = models.CharField(
+        db_column="ID_Loja", max_length=10, blank=True, null=True
+    )
+    nome = models.CharField(db_column="Nome", max_length=200, blank=True, null=True)
+    descricao = models.CharField(
+        db_column="Descricao", max_length=200, blank=True, null=True
+    )
+    codigointerno = models.CharField(
+        db_column="CodigoInterno", max_length=100, blank=True, null=True
+    )
+    codigobarra = models.CharField(
+        db_column="CodigoBarra", max_length=100, blank=True, null=True
+    )
+    valorvenda = models.CharField(
+        db_column="ValorVenda", max_length=10, blank=True, null=True
+    )
+    valorcusto = models.CharField(
+        db_column="ValorCusto", max_length=10, blank=True, null=True
+    )
+
+    def __str__(self):
+        return self.nome if self.nome else "Produto sem nome"
+
+
+class VendasSituacao(models.Model):
+    """
+    Modelo para acessar situações de vendas do sistema.
+    Tabela existente no banco de dados (não gera migração).
+    """
+
+    class Meta:
+        db_table = "VendasSituacao"
+        managed = False
+        verbose_name = "Venda Situação"
+        verbose_name_plural = "Vendas Situações"
+
+    situacaonome = models.CharField(
+        db_column="SituacaoNome", max_length=100, blank=True, null=True
+    )
+
+    def __str__(self):
+        return self.situacaonome if self.situacaonome else "Situação"
+
+
+class VendaProdutos(models.Model):
+    """
+    Modelo para acessar produtos vendidos.
+    Tabela existente no banco de dados (não gera migração).
+    """
+
+    class Meta:
+        db_table = "VendaProdutos"
+        managed = False
+        verbose_name = "Venda Produto"
+        verbose_name_plural = "Venda Produtos"
+
+    id = models.BigAutoField(primary_key=True)
+    venda_id = models.CharField(db_column="Venda_ID", max_length=100)
+    nome = models.TextField(db_column="Nome")
+    detalhes = models.TextField(db_column="Detalhes", blank=True, null=True)
+    quantidade = models.CharField(db_column="Quantidade", max_length=100)
+    valorcusto = models.CharField(db_column="ValorCusto", max_length=100)
+    valorvenda = models.CharField(db_column="ValorVenda", max_length=100)
+    valordesconto = models.CharField(db_column="ValorDesconto", max_length=100)
+    valortotal = models.CharField(db_column="ValorTotal", max_length=100)
+
+    def __str__(self):
+        return f"{self.nome} (Venda {self.venda_id})"

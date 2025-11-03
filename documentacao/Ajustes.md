@@ -30,6 +30,17 @@
 
 - Implementada atualização da **Meta** no **Módulo ⚙️ Gerenciar Dashboards**
 
+**03/11/2025**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+  
+
+### **10:21 - Commit 04**
+
+- Implementada **Exibição Real Dasboads**
+
 **dd/mm/aaaa**
 
 - #### ***Instalar requirements.txt***
