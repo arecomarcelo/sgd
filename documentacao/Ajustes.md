@@ -49,6 +49,17 @@
 
 - Ajuste **Background Cards
 
+**18/11/2025**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+  
+
+### **10:03 - Commit 07**
+
+- Ajuste Novo Modelo **RPA_Atualizacao**
+
 **dd/mm/aaaa**
 
 - #### ***Instalar requirements.txt***

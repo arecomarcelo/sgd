@@ -3399,3 +3399,87 @@ ANTES:                          DEPOIS:
 
 ---
 
+
+## 📅 18/11/2025
+
+### ⏰ 09:52 - Substituição do Modelo VendaAtualizacao por RPA_Atualizacao
+
+#### 📝 O que foi pedido:
+Substituir o modelo `VendaAtualizacao` pelo novo modelo `RPA_Atualizacao` em toda a aplicação.
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Análise de Dependências:**
+- ✅ Mapeadas todas as referências ao modelo `VendaAtualizacao`
+- ✅ Identificados 6 arquivos com referências ao modelo antigo
+- ✅ Analisados os locais de uso: models.py, Slideshow.py, documentação
+
+**2. Adição dos Novos Modelos:**
+- ✅ Criado modelo `RPA` no `dashboard/models.py`:
+  - Tabela existente no banco (managed=False)
+  - Campos: Nome, Descricao
+  - Representa os RPAs do sistema
+- ✅ Criado modelo `RPA_Atualizacao` no `dashboard/models.py`:
+  - Substitui o modelo VendaAtualizacao
+  - Campos: Data, Hora, Periodo, Inseridos, Atualizados
+  - ForeignKey para o modelo RPA
+  - Mantém a mesma estrutura de dados para compatibilidade
+
+**3. Atualização do Slideshow:**
+- ✅ Substituído import de `VendaAtualizacao` por `RPA_Atualizacao`
+- ✅ Atualizado código que busca última atualização:
+  - Mudou de `VendaAtualizacao.objects.latest('id')` para `RPA_Atualizacao.objects.latest('id')`
+  - Mantida a mesma lógica de exibição de Período e Data/Hora
+
+**4. Atualização do Django Admin:**
+- ✅ Adicionados imports dos novos modelos `RPA` e `RPA_Atualizacao`
+- ✅ Criado `RPAAdmin` para administração do modelo RPA (somente leitura)
+- ✅ Criado `RPAAtualizacaoAdmin` para administração do modelo RPA_Atualizacao:
+  - Lista: RPA, Periodo, Data, Hora, Inseridos, Atualizados
+  - Filtros: RPA, Periodo, Data
+  - Ordenação: Data e Hora decrescente
+  - Modo somente leitura (sem adição, alteração ou exclusão manual)
+
+**5. Validação:**
+- ✅ Verificada sintaxe de todos os arquivos Python modificados
+- ✅ Todos os arquivos compilaram sem erros
+- ✅ Estrutura de dados mantida para compatibilidade
+
+#### 📁 Arquivos Alterados ou Criados:
+- 📝 **ALTERADO**: `/dashboard/models.py` - Adicionados modelos RPA e RPA_Atualizacao
+- 📝 **ALTERADO**: `/pages/01_🎬_Slideshow.py` - Substituído uso de VendaAtualizacao
+- 📝 **ALTERADO**: `/dashboard/admin.py` - Adicionados registros admin para RPA e RPA_Atualizacao
+- 📝 **ATUALIZADO**: `/documentacao/Historico.md` - Registro desta interação
+
+#### 🎯 Impacto:
+- O sistema agora utiliza o modelo `RPA_Atualizacao` em vez de `VendaAtualizacao`
+- Mantida a compatibilidade com a estrutura de dados existente
+- Administração Django atualizada para refletir os novos modelos
+- Funcionalidade do Slideshow preservada sem alterações visuais
+
+---
+
+
+### ⏰ 09:59 - Adição de Filtro RPA_id = 7 no Slideshow
+
+#### 📝 O que foi pedido:
+Adicionar filtro na busca de `RPA_Atualizacao` para retornar apenas registros onde `RPA_id = 7`.
+
+#### 🔧 Detalhamento da Solução:
+
+**Atualização do Filtro:**
+- ✅ Modificado código no Slideshow que busca informações de atualização
+- ✅ Adicionado filtro `.filter(RPA_id=7)` antes do `.latest('id')`
+- ✅ Query atualizada: `RPA_Atualizacao.objects.filter(RPA_id=7).latest('id')`
+- ✅ Mantida a mesma lógica de tratamento de exceção quando não há registros
+
+#### 📁 Arquivos Alterados:
+- 📝 **ALTERADO**: `/pages/01_🎬_Slideshow.py` (linha 437) - Adicionado filtro RPA_id=7
+- 📝 **ATUALIZADO**: `/documentacao/Historico.md` - Registro desta interação
+
+#### 🎯 Impacto:
+- O Slideshow agora exibe apenas informações de atualização do RPA com id = 7
+- Período e Data/Hora exibidos no rodapé são específicos do RPA_id = 7
+
+---
+

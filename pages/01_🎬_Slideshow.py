@@ -18,7 +18,7 @@ from dashboard.models import (
     Dashboard,
     Dashboard_Config,
     Dashboard_Log,
-    VendaAtualizacao,
+    RPA_Atualizacao,
 )
 
 # Importa os painéis customizados
@@ -432,12 +432,12 @@ else:
         unsafe_allow_html=True,
     )
 
-# Buscar informações de atualização
+# Buscar informações de atualização (filtrar apenas RPA_id = 7)
 try:
-    venda_atualizacao = VendaAtualizacao.objects.latest('id')
-    periodo = venda_atualizacao.Periodo
-    data_atualizacao = f"{venda_atualizacao.Data} {venda_atualizacao.Hora}"
-except VendaAtualizacao.DoesNotExist:
+    rpa_atualizacao = RPA_Atualizacao.objects.filter(RPA_id=7).latest('id')
+    periodo = rpa_atualizacao.Periodo
+    data_atualizacao = f"{rpa_atualizacao.Data} {rpa_atualizacao.Hora}"
+except RPA_Atualizacao.DoesNotExist:
     periodo = "N/A"
     data_atualizacao = "N/A"
 

@@ -45,23 +45,48 @@ class Dashboard_Config(models.Model):
         return f"{self.Ordem} - {self.Dashboard.Nome} ({self.Duracao}s)"
 
 
-class VendaAtualizacao(models.Model):
+class RPA(models.Model):
     """
-    Modelo para armazenar informações sobre a última atualização das vendas.
+    Modelo para armazenar informações sobre RPAs.
     Tabela existente no banco de dados (não gera migração).
     """
 
     class Meta:
-        db_table = "VendaAtualizacao"
+        db_table = "RPA"
         managed = False  # Tabela já existe, Django não deve gerenciá-la
-        verbose_name = "Venda Atualização"
-        verbose_name_plural = "Vendas Atualizações"
+        verbose_name = "RPA"
+        verbose_name_plural = "RPAs"
 
-    Data = models.CharField(max_length=255, verbose_name="Data")
-    Hora = models.CharField(max_length=255, verbose_name="Hora")
-    Periodo = models.CharField(max_length=255, verbose_name="Período")
-    Inseridos = models.CharField(max_length=255, verbose_name="Inseridos")
-    Atualizados = models.CharField(max_length=255, verbose_name="Atualizados")
+    Nome = models.CharField(max_length=255, verbose_name="Nome")
+    Descricao = models.CharField(
+        max_length=255, verbose_name="Descrição", null=True, blank=True
+    )
+
+    def __str__(self):
+        return self.Nome
+
+
+class RPA_Atualizacao(models.Model):
+    """
+    Modelo para armazenar informações sobre atualizações de RPAs.
+    """
+
+    class Meta:
+        db_table = "RPA_Atualizacao"
+        ordering = ["Data"]
+        verbose_name = "RPA Atualização"
+        verbose_name_plural = "RPA Atualizações"
+
+    Data = models.CharField(max_length=100, verbose_name="Data")
+    Hora = models.CharField(max_length=100, verbose_name="Hora")
+    Periodo = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name="Período"
+    )
+    Inseridos = models.CharField(max_length=100, verbose_name="Inseridos")
+    Atualizados = models.CharField(
+        max_length=100, null=True, blank=True, verbose_name="Atualizados"
+    )
+    RPA = models.ForeignKey(RPA, on_delete=models.CASCADE, verbose_name="RPA")
 
     def __str__(self):
         return f"{self.Periodo} - {self.Data} {self.Hora}"
