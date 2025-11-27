@@ -10,7 +10,7 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
-from dashboard.models import VendaConfiguracao, VendaProdutos, Vendas
+from dashboard.models import VendaConfiguracao, VendaProdutos, Vendas, Vendedores
 
 # Import para requirements.txt
 try:
@@ -62,6 +62,8 @@ def get_vendas_periodo():
     """
     Busca vendas do período com filtros fixos aplicados
     Retorna queryset filtrado
+    Exclui vendas com situação "Cancelada (sem financeiro)" e "Não considerar - Excluidos"
+    Filtra apenas vendedores que existem na tabela Vendedores
     """
     data_inicial, data_final = get_filtros_periodo()
 
@@ -71,11 +73,26 @@ def get_vendas_periodo():
     di_str = f"{di_parts[2]}-{di_parts[1]}-{di_parts[0]}"  # YYYY-MM-DD
     df_str = f"{df_parts[2]}-{df_parts[1]}-{df_parts[0]}"  # YYYY-MM-DD
 
+    # Situações a serem excluídas
+    situacoes_excluidas = ["Cancelada (sem financeiro)", "Não considerar - Excluidos"]
+
+    # Buscar lista de vendedores válidos
+    vendedores_validos = set(Vendedores.objects.values_list('nome', flat=True))
+
     vendas = Vendas.objects.all()
 
     vendas_filtradas = []
     for venda in vendas:
         try:
+            # Filtrar por situação
+            if venda.situacaonome in situacoes_excluidas:
+                continue
+
+            # Filtrar apenas vendedores válidos (trim do nome)
+            vendedor_nome = venda.vendedornome.strip() if venda.vendedornome else ""
+            if vendedor_nome not in vendedores_validos:
+                continue
+
             data_venda = venda.data.strip()
 
             if "/" in data_venda:
@@ -573,23 +590,33 @@ def render_ranking_vendedores(theme='dark'):
             data_inicio_anterior = data_inicio_atual - relativedelta(years=1)
             data_fim_anterior = data_fim_atual - relativedelta(years=1)
 
+            # Situações a serem excluídas
+            situacoes_excluidas = [
+                "Cancelada (sem financeiro)",
+                "Não considerar - Excluidos",
+            ]
+
+            # Buscar lista de vendedores válidos
+            vendedores_validos = set(Vendedores.objects.values_list('nome', flat=True))
+
             # Buscar vendas do período atual (realizado)
             vendas_atual = Vendas.objects.filter(
                 data__gte=data_inicio_atual.strftime("%d/%m/%Y"),
                 data__lte=data_fim_atual.strftime("%d/%m/%Y"),
-            )
+            ).exclude(situacaonome__in=situacoes_excluidas)
 
             # Buscar vendas do período anterior (meta)
             vendas_anterior = Vendas.objects.filter(
                 data__gte=data_inicio_anterior.strftime("%d/%m/%Y"),
                 data__lte=data_fim_anterior.strftime("%d/%m/%Y"),
-            )
+            ).exclude(situacaonome__in=situacoes_excluidas)
 
             # Processar realizado
             vendas_realizadas = {}
             for venda in vendas_atual:
-                nome = venda.vendedornome
-                if nome in vendedores_nomes:
+                nome = venda.vendedornome.strip() if venda.vendedornome else ""
+                # Filtrar apenas vendedores válidos
+                if nome in vendedores_nomes and nome in vendedores_validos:
                     if nome not in vendas_realizadas:
                         vendas_realizadas[nome] = Decimal("0")
                     vendas_realizadas[nome] += parse_valor(venda.valortotal)
@@ -597,8 +624,9 @@ def render_ranking_vendedores(theme='dark'):
             # Processar meta
             vendas_meta = {}
             for venda in vendas_anterior:
-                nome = venda.vendedornome
-                if nome in vendedores_nomes:
+                nome = venda.vendedornome.strip() if venda.vendedornome else ""
+                # Filtrar apenas vendedores válidos
+                if nome in vendedores_nomes and nome in vendedores_validos:
                     if nome not in vendas_meta:
                         vendas_meta[nome] = Decimal("0")
                     vendas_meta[nome] += parse_valor(venda.valortotal)

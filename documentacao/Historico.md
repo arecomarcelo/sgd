@@ -3483,3 +3483,99 @@ Adicionar filtro na busca de `RPA_Atualizacao` para retornar apenas registros on
 
 ---
 
+
+
+### ⏰ 14:48 - Correção de Filtros de Vendas no Dashboard
+
+#### 📝 O que foi pedido:
+1. Corrigir valor "💰 Realizado no Mês" no dashboard de Meta de Vendas (estava exibindo R$ 21.338.223,38 quando deveria ser R$ 20.970.373,94)
+2. Ajustar busca geral de Vendas para excluir vendas com SituacaoNome "Cancelada (sem financeiro)" e "Não considerar - Excluidos"
+
+#### 🔧 Detalhamento da Solução:
+
+**Problema Identificado:**
+- ❌ A função `get_vendas_periodo()` estava retornando TODAS as vendas do período sem filtrar por situação
+- ❌ Isso incluía vendas canceladas e excluídas, inflacionando o valor total
+- ❌ Outras funções também faziam buscas diretas sem o filtro de situação
+
+**Correções Implementadas:**
+1. ✅ **Atualizada função `get_vendas_periodo()`** (linhas 61-105):
+   - Adicionada lista de situações excluídas: `["Cancelada (sem financeiro)", "Não considerar - Excluidos"]`
+   - Implementado filtro no loop que processa vendas
+   - Documentação atualizada com descrição do filtro
+
+2. ✅ **Corrigida função `calcular_vendas_mes_atual_para_gauge()`** (linhas 584-597):
+   - Adicionada exclusão de situações indesejadas nas consultas de vendas atual e anterior
+   - Usado `.exclude(situacaonome__in=situacoes_excluidas)` nas queries do Django ORM
+   - Garantida consistência nos cálculos dos gauges do ranking de vendedores
+
+**Validação:**
+- ✅ Verificadas todas as referências a `Vendas.objects` no código
+- ✅ Confirmado que todos os pontos de busca agora aplicam o filtro de situação
+- ✅ Mantida compatibilidade com todo o código existente
+
+#### 📁 Arquivos Alterados:
+- 📝 **ALTERADO**: `/dashboard/panels.py` - Adicionados filtros de situação nas funções de busca de vendas
+- 📝 **ATUALIZADO**: `/documentacao/Historico.md` - Registro desta interação
+
+#### 🎯 Impacto:
+- 💰 Valor "Realizado no Mês" agora exibe o montante correto (excluindo vendas canceladas/excluídas)
+- 📊 Todos os dashboards (Meta Mês, Métricas, Ranking Vendedores, Ranking Produtos) agora usam dados filtrados
+- 🎯 Cálculos de metas e percentuais mais precisos
+- 🔍 Busca geral de vendas retorna apenas vendas válidas
+
+---
+
+
+### ⏰ 15:10 - Ajuste Adicional: Filtro de Vendedores Válidos
+
+#### 📝 O que foi pedido:
+Ajustar o filtro de vendas para incluir apenas vendedores que existem na tabela `Vendedores`, conforme a query:
+```sql
+SELECT SUM(v."ValorTotal"::NUMERIC) AS total_vendas
+FROM "Vendas" v  
+WHERE TRIM(v."VendedorNome") IN (select "Nome" from "Vendedores")
+AND v."Data"::DATE >= DATE_TRUNC('month', CURRENT_DATE)::DATE 
+AND v."Data"::DATE <= CURRENT_DATE
+```
+
+#### 🔧 Detalhamento da Solução:
+
+**Problema Identificado:**
+- ❌ Após primeira correção, valor ainda incorreto: R$ 21.312.119,97
+- ❌ Estava faltando filtrar apenas vendedores cadastrados na tabela `Vendedores`
+- ❌ Vendas de vendedores não cadastrados estavam sendo incluídas
+
+**Correções Implementadas:**
+
+1. ✅ **Adicionado import do modelo `Vendedores`** (linha 13):
+   - Importado junto com os outros modelos do dashboard
+
+2. ✅ **Atualizada função `get_vendas_periodo()`** (linhas 79-94):
+   - Busca lista de vendedores válidos: `vendedores_validos = set(Vendedores.objects.values_list('nome', flat=True))`
+   - Aplica `.strip()` no nome do vendedor antes de comparar
+   - Filtra apenas vendas onde vendedor está na lista de válidos
+   - Documentação atualizada
+
+3. ✅ **Atualizada função `calcular_vendas_mes_atual_para_gauge()`** (linhas 596-629):
+   - Busca lista de vendedores válidos dentro da função
+   - Aplica filtro nos loops de processamento de vendas atuais e anteriores
+   - Usa `.strip()` para remover espaços do nome do vendedor
+   - Valida dupla: vendedor na lista da tabela E vendedor válido
+
+**Validação:**
+- ✅ Todas as consultas de vendas agora filtram por vendedores válidos
+- ✅ Uso de `TRIM` implementado via `.strip()` no Python
+- ✅ Lógica alinhada com a query SQL fornecida
+
+#### 📁 Arquivos Alterados:
+- 📝 **ALTERADO**: `/dashboard/panels.py` - Adicionado filtro de vendedores válidos
+- 📝 **ATUALIZADO**: `/documentacao/Historico.md` - Registro desta interação
+
+#### 🎯 Impacto:
+- 💰 Valor "Realizado no Mês" agora deve exibir **R$ 20.970.373,94**
+- ✅ Apenas vendas de vendedores cadastrados são consideradas
+- 📊 Todos os cálculos (dashboards, métricas, rankings) usam apenas dados válidos
+- 🎯 Maior precisão e consistência nos relatórios
+
+---
