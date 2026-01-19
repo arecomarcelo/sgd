@@ -19,6 +19,7 @@ from dashboard.models import (
     Dashboard_Config,
     Dashboard_Log,
     RPA_Atualizacao,
+    VendaConfiguracao,
 )
 
 # Importa os painéis customizados
@@ -27,6 +28,7 @@ from dashboard.panels import (
     render_metricas_vendas,
     render_ranking_produtos,
     render_ranking_vendedores,
+    render_texto,
 )
 
 st.set_page_config(
@@ -420,6 +422,19 @@ elif (
     'ranking' in nome_dashboard_normalizado and 'produto' in nome_dashboard_normalizado
 ):
     render_ranking_produtos(theme=st.session_state.theme)
+elif 'mensagem' in nome_dashboard_normalizado or 'texto' in nome_dashboard_normalizado:
+    # Slide de mensagem - busca texto da VendaConfiguracao id=2 (somente mensagem, sem título)
+    try:
+        config_mensagem = VendaConfiguracao.objects.get(id=2)
+        texto_mensagem = config_mensagem.Valor
+    except VendaConfiguracao.DoesNotExist:
+        texto_mensagem = "Mensagem não configurada"
+
+    render_texto(
+        texto=texto_mensagem,
+        titulo="",  # Sem título
+        theme=st.session_state.theme,
+    )
 else:
     # Fallback: exibir card simples se não houver painel específico
     st.markdown(

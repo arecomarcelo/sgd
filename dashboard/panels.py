@@ -981,6 +981,229 @@ def render_ranking_vendedores(theme='dark'):
     components.html(html_content, height=700, scrolling=False)
 
 
+def render_texto(texto, titulo="", theme='dark'):
+    """
+    Renderiza painel de Texto - Formatação elegante e profissional
+    Suporta quebras de linha e formatação rica
+
+    Args:
+        texto: Texto a ser exibido (suporta \\n para quebra de linha)
+        titulo: Título opcional do slide
+        theme: Tema do painel ('dark' ou 'light')
+    """
+    # Processar quebras de linha no texto
+    # Suporta tanto \n literal quanto <br> em HTML
+    texto_formatado = texto.replace('\\n', '<br>').replace('\n', '<br>')
+
+    # Cores do tema Dracula at Night
+    if theme == 'dark':
+        bg_color = "#1a1d2e"  # Background escuro do Dracula
+        text_color_primary = "#f8f8f2"  # Texto principal (branco suave)
+        text_color_titulo = "#8be9fd"  # Ciano para título
+        text_color_secundario = "#6272a4"  # Comentário/secundário
+        card_bg = "rgba(0, 0, 0, 0.4)"  # Card semi-transparente
+        border_color = "#44475a"  # Borda do Dracula
+        accent_color = "#bd93f9"  # Roxo accent
+    else:
+        bg_color = "#f0f0f0"
+        text_color_primary = "#1a1a1a"
+        text_color_titulo = "#1a73e8"
+        text_color_secundario = "#5f6368"
+        card_bg = "rgba(255, 255, 255, 0.9)"
+        border_color = "#e0e0e0"
+        accent_color = "#4285f4"
+
+    # HTML com título opcional
+    titulo_html = ""
+    if titulo and titulo.strip():
+        titulo_html = f"""
+            <div class="texto-titulo">
+                <span class="titulo-icon">📝</span>
+                <span>{titulo}</span>
+            </div>
+        """
+
+    html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                * {{
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }}
+                body {{
+                    margin: 0;
+                    padding: 0;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    background: {bg_color};
+                    overflow-y: auto;
+                }}
+                .texto-container {{
+                    background: {bg_color};
+                    min-height: 100vh;
+                    width: 100vw;
+                    padding: 50px 60px 200px 60px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                }}
+                .texto-titulo {{
+                    color: {text_color_titulo};
+                    font-size: 2.8rem;
+                    font-weight: 700;
+                    margin-bottom: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 15px;
+                    text-align: center;
+                    letter-spacing: -0.5px;
+                    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                }}
+                .titulo-icon {{
+                    font-size: 3rem;
+                }}
+                .texto-card {{
+                    background: {card_bg};
+                    border-radius: 24px;
+                    padding: 50px 70px;
+                    max-width: 1200px;
+                    width: 90%;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+                    border: 1px solid {border_color};
+                    backdrop-filter: blur(10px);
+                    position: relative;
+                    overflow: hidden;
+                }}
+                .texto-card::before {{
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 6px;
+                    height: 100%;
+                    background: linear-gradient(180deg, {accent_color}, {text_color_titulo});
+                    border-radius: 24px 0 0 24px;
+                }}
+                .texto-conteudo {{
+                    color: {text_color_primary};
+                    font-size: 1.8rem;
+                    line-height: 1.9;
+                    text-align: center;
+                    font-weight: 400;
+                    letter-spacing: 0.3px;
+                }}
+                .texto-conteudo strong,
+                .texto-conteudo b {{
+                    color: {text_color_titulo};
+                    font-weight: 700;
+                }}
+                .texto-decoracao {{
+                    display: flex;
+                    justify-content: center;
+                    gap: 15px;
+                    margin-top: 40px;
+                    opacity: 0.5;
+                }}
+                .decoracao-dot {{
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    background: {accent_color};
+                }}
+
+                /* Animação de entrada suave */
+                @keyframes fadeInUp {{
+                    from {{
+                        opacity: 0;
+                        transform: translateY(30px);
+                    }}
+                    to {{
+                        opacity: 1;
+                        transform: translateY(0);
+                    }}
+                }}
+                .texto-card {{
+                    animation: fadeInUp 0.8s ease-out;
+                }}
+                .texto-titulo {{
+                    animation: fadeInUp 0.6s ease-out;
+                }}
+
+                @media (max-width: 1200px) {{
+                    .texto-container {{
+                        padding: 40px 40px 180px 40px;
+                    }}
+                    .texto-card {{
+                        padding: 40px 50px;
+                    }}
+                    .texto-conteudo {{
+                        font-size: 1.6rem;
+                    }}
+                }}
+
+                @media (max-width: 768px) {{
+                    .texto-container {{
+                        padding: 30px 20px 180px 20px;
+                    }}
+                    .texto-titulo {{
+                        font-size: 2rem;
+                    }}
+                    .titulo-icon {{
+                        font-size: 2.2rem;
+                    }}
+                    .texto-card {{
+                        padding: 30px 25px;
+                        border-radius: 16px;
+                    }}
+                    .texto-card::before {{
+                        width: 4px;
+                    }}
+                    .texto-conteudo {{
+                        font-size: 1.3rem;
+                        line-height: 1.8;
+                    }}
+                }}
+
+                @media (max-width: 480px) {{
+                    .texto-titulo {{
+                        font-size: 1.6rem;
+                        flex-direction: column;
+                        gap: 10px;
+                    }}
+                    .texto-conteudo {{
+                        font-size: 1.15rem;
+                    }}
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="texto-container">
+                {titulo_html}
+
+                <div class="texto-card">
+                    <div class="texto-conteudo">
+                        {texto_formatado}
+                    </div>
+                    <div class="texto-decoracao">
+                        <div class="decoracao-dot"></div>
+                        <div class="decoracao-dot"></div>
+                        <div class="decoracao-dot"></div>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+    """
+
+    components.html(html_content, height=750, scrolling=False)
+
+
 def render_ranking_produtos(theme='dark'):
     """
     Renderiza painel Ranking Produtos - ADAPTADO DO SGR

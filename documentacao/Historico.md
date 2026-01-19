@@ -3579,3 +3579,237 @@ AND v."Data"::DATE <= CURRENT_DATE
 - 🎯 Maior precisão e consistência nos relatórios
 
 ---
+
+
+### ⏰ 15:15 - Criação de Documento: Passo a Passo de Correções
+
+#### 📝 O que foi pedido:
+Criar um documento passo a passo detalhado das alterações implementadas para que possam ser aplicadas em outro projeto.
+
+#### 🔧 Detalhamento da Solução:
+
+**Documento Criado:**
+- ✅ **Arquivo**: `/documentacao/Passo_a_Passo_Correcao_Filtros_Vendas.md`
+- ✅ **Estrutura completa** com 9 seções principais:
+
+**Conteúdo do Documento:**
+
+1. **🎯 Objetivo e Problema Identificado**
+   - Descrição do problema
+   - Query SQL correta de referência
+
+2. **📝 Passo a Passo Detalhado**
+   - PASSO 1: Identificar arquivo de busca
+   - PASSO 2: Adicionar import do modelo Vendedores
+   - PASSO 3: Atualizar função principal (3 sub-passos)
+   - PASSO 4: Atualizar queries diretas
+   - PASSO 5: Atualizar documentação
+
+3. **✅ Checklist de Validação**
+   - Itens para verificar antes de testar
+   - Procedimentos de teste
+   - Query SQL para comparação
+
+4. **🔧 Adaptações por Tecnologia**
+   - Django ORM
+   - SQLAlchemy
+   - Raw SQL
+
+5. **⚠️ Pontos de Atenção**
+   - Nomes de campos
+   - Formato de data
+   - Cache
+   - Performance
+
+6. **📊 Exemplo Completo**
+   - Código Python completo funcional
+   - Comentários explicativos
+
+7. **📞 Suporte**
+   - Passos para troubleshooting
+
+8. **📚 Referências**
+   - Links para documentação oficial
+
+**Características do Documento:**
+- ✅ Código ANTES e DEPOIS em cada passo
+- ✅ Alertas e observações importantes (⚠️)
+- ✅ Exemplos práticos e executáveis
+- ✅ Adaptações para diferentes ORMs
+- ✅ Checklist completo de validação
+- ✅ Query SQL de teste
+- ✅ Seção de troubleshooting
+
+#### 📁 Arquivos Criados:
+- 📄 **CRIADO**: `/documentacao/Passo_a_Passo_Correcao_Filtros_Vendas.md`
+- 📝 **ATUALIZADO**: `/documentacao/Historico.md` - Registro desta interação
+
+#### 🎯 Impacto:
+- 📚 Documentação completa para replicar correções em outros projetos
+- 🔧 Guia técnico detalhado com exemplos práticos
+- ✅ Checklist de validação para garantir implementação correta
+- 🌐 Adaptável para diferentes tecnologias (Django, SQLAlchemy, SQL)
+
+---
+
+### ⏰ 19/01/2026
+
+#### 🕐 Hora: $(date +"%H:%M")
+
+#### 📝 Solicitação:
+Adicionar novo painel "Texto Dinâmico" na página de Gerenciamento de Dashboards, abaixo do painel de Meta de Vendas.
+
+#### ✅ Solução Implementada:
+Criado novo painel **💬 Texto Dinâmico** com as seguintes funcionalidades:
+
+1. **📥 Caixa de Texto**
+   - Campo de entrada para digitação da mensagem dinâmica
+   - Placeholder orientativo
+   - Tooltip com informações de ajuda
+
+2. **💾 Botão Salvar**
+   - Grava o texto no modelo `VendaConfiguracao`
+   - Registro com `id=2` (Descrição="Mensagem")
+   - Atualiza o campo `Valor` com o texto digitado
+
+3. **🔄 Funcionalidades**
+   - Carrega valor atual automaticamente
+   - Exibe mensagem de sucesso após salvar
+   - Tratamento de erros (registro não encontrado, exceções)
+   - Recarrega a página após salvamento
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `pages/02_⚙️_Gerenciar.py` - Adicionado painel Texto Dinâmico
+
+---
+
+### 🕐 13:26 - Criação do Slide de Texto
+
+#### 📝 O que foi pedido:
+1. Criar um Novo Slide para exibição de Texto
+2. Aplicar formatação elegante e profissional
+3. Configurar quebra de linha
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Nova Função `render_texto` no panels.py:**
+- ✅ Criada função completa para renderizar slides de texto
+- ✅ Suporta quebras de linha (`\n` e `<br>`)
+- ✅ Formatação elegante seguindo tema Dracula at Night
+- ✅ Card com borda lateral em gradiente (roxo → ciano)
+- ✅ Animação de entrada suave (fadeInUp)
+- ✅ Design responsivo (desktop, tablet, mobile)
+- ✅ Suporte a texto em negrito (`<strong>` e `<b>`)
+
+**2. Características do Design:**
+- 📝 Título opcional com ícone
+- 💜 Card semi-transparente com backdrop-filter blur
+- ✨ Decoração com pontos no rodapé do card
+- 🎨 Cores do tema Dracula:
+  - Background: `#1a1d2e`
+  - Texto: `#f8f8f2`
+  - Título: `#8be9fd` (ciano)
+  - Accent: `#bd93f9` (roxo)
+
+**3. Integração no Slideshow:**
+- ✅ Adicionado import do `render_texto`
+- ✅ Mapeamento para dashboards com "texto" no nome
+- ✅ Usa `Nome` como título e `Descrição` como conteúdo
+
+**4. Como Usar:**
+- Cadastrar dashboard com nome contendo "texto" (ex: "Texto Avisos", "Texto Mensagem")
+- O campo `Nome` será exibido como título do slide
+- O campo `Descrição` será exibido como conteúdo do texto
+- Usar `\n` na descrição para quebras de linha
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `dashboard/panels.py` - Adicionada função `render_texto` (~220 linhas)
+- 📄 **ALTERADO**: `pages/01_🎬_Slideshow.py` - Import e mapeamento do novo tipo de slide
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
+
+### 🕐 13:30 - Correção: Buscar Mensagem da VendaConfiguracao
+
+#### 📝 O que foi pedido:
+Corrigir o slide de texto para exibir a mensagem configurada na tabela `VendaConfiguracao` com `id=2`, em vez da descrição do Dashboard.
+
+#### 🔧 Detalhamento da Solução:
+
+**Problema Identificado:**
+- ❌ O slide exibia `current_dashboard.Descricao` ("Dashboard de Exibição de Mensagens Dinâmicas")
+- ✅ Deveria exibir o campo `Valor` da tabela `VendaConfiguracao` onde `id=2`
+
+**Correções Implementadas:**
+1. ✅ Adicionado import do modelo `VendaConfiguracao` no Slideshow
+2. ✅ Modificada a condição para incluir "mensagem" no nome do dashboard
+3. ✅ Busca do texto agora feita na tabela `VendaConfiguracao.objects.get(id=2)`
+4. ✅ Tratamento de exceção caso registro não exista
+
+**Código Atualizado:**
+```python
+elif 'texto' in nome_dashboard_normalizado or 'mensagem' in nome_dashboard_normalizado:
+    try:
+        config_mensagem = VendaConfiguracao.objects.get(id=2)
+        texto_mensagem = config_mensagem.Valor
+    except VendaConfiguracao.DoesNotExist:
+        texto_mensagem = "Mensagem não configurada"
+
+    render_texto(
+        texto=texto_mensagem,
+        titulo=current_dashboard.Nome,
+        theme=st.session_state.theme,
+    )
+```
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `pages/01_🎬_Slideshow.py` - Import VendaConfiguracao e busca correta do texto
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
+
+### 🕐 13:34 - Ajuste: Manter Painel no Gerenciamento, Remover Slide
+
+#### 📝 O que foi pedido:
+- Restaurar o painel "💬 Texto Dinâmico" na página de Gerenciamento
+- Remover o slide de texto do Slideshow
+
+#### 🔧 Detalhamento da Solução:
+
+**1. Página de Gerenciamento (02_⚙️_Gerenciar.py):**
+- ✅ Restaurado o painel "💬 Texto Dinâmico" completo
+- ✅ Campo de entrada para mensagem
+- ✅ Botão "💾 Salvar Texto" funcional
+- ✅ Busca e salva na tabela `VendaConfiguracao` (id=2)
+
+**2. Página de Slideshow (01_🎬_Slideshow.py):**
+- ✅ Removido o mapeamento para dashboards "texto" ou "mensagem"
+- ✅ Removido import do `render_texto`
+- ✅ Removido import do `VendaConfiguracao`
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `pages/02_⚙️_Gerenciar.py` - Restaurado painel Texto Dinâmico
+- 📄 **ALTERADO**: `pages/01_🎬_Slideshow.py` - Removido slide de texto e imports
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
+
+### 🕐 13:37 - Correção: Exibir Somente a Mensagem no Slide
+
+#### 📝 O que foi pedido:
+Exibir a mensagem configurada na tabela `VendaConfiguracao` (id=2) no Slideshow, **somente a mensagem**, sem o título "📝 Mensagem Dinâmica".
+
+#### 🔧 Detalhamento da Solução:
+- ✅ Restaurado import do `VendaConfiguracao` no Slideshow
+- ✅ Restaurado import do `render_texto` no Slideshow
+- ✅ Adicionado mapeamento para dashboards com "mensagem" ou "texto" no nome
+- ✅ Busca a mensagem da tabela `VendaConfiguracao.objects.get(id=2)`
+- ✅ Chama `render_texto` com `titulo=""` (sem título)
+
+**Resultado:** O slide agora exibe apenas o conteúdo da mensagem, sem título.
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `pages/01_🎬_Slideshow.py` - Adicionado slide de mensagem sem título
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---

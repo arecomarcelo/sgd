@@ -73,6 +73,52 @@ with col_meta2:
 
 st.markdown("---")
 
+# Painel de Texto Dinâmico
+st.subheader("💬 Texto Dinâmico")
+
+# Buscar valor atual do texto dinâmico
+try:
+    config_texto = VendaConfiguracao.objects.get(id=2)
+    valor_texto_atual = config_texto.Valor
+except VendaConfiguracao.DoesNotExist:
+    valor_texto_atual = ""
+    st.warning("⚠️ Configuração de Mensagem não encontrada no banco de dados")
+
+# Layout em colunas para o campo de texto dinâmico
+col_texto1, col_texto2 = st.columns([3, 1])
+
+with col_texto1:
+    novo_texto = st.text_input(
+        "Mensagem",
+        value=valor_texto_atual,
+        placeholder="Digite a mensagem dinâmica",
+        help="💡 Digite o texto que será exibido dinamicamente",
+        key="input_texto_dinamico",
+    )
+
+with col_texto2:
+    st.write("")  # Espaçamento vertical para alinhar o botão
+    st.write("")  # Mais espaçamento
+    if st.button(
+        "💾 Salvar Texto",
+        key="btn_salvar_texto",
+        help="Clique para salvar a mensagem",
+    ):
+        try:
+            config_texto = VendaConfiguracao.objects.get(id=2)
+            config_texto.Valor = novo_texto.strip() if novo_texto else ""
+            config_texto.save()
+            st.success("✅ Mensagem atualizada com sucesso!")
+            st.rerun()
+        except VendaConfiguracao.DoesNotExist:
+            st.error(
+                "❌ Erro: Configuração de Mensagem não encontrada no banco de dados"
+            )
+        except Exception as e:
+            st.error(f"❌ Erro ao salvar mensagem: {str(e)}")
+
+st.markdown("---")
+
 # Painel de Ordem Atual
 st.subheader("📊 Ordem Atual")
 
