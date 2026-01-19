@@ -85,6 +85,12 @@
 
 - Implementado **Painel Mensagem Dinâmica**
 
+
+### **hh:mm - Commit 10**
+
+- **Painel Mensagem Dinâmica**:
+    - Ajuste **Tamanho do Fonte**
+
 **dd/mm/aaaa**
 
 - #### ***Instalar requirements.txt***

@@ -1092,11 +1092,11 @@ def render_texto(texto, titulo="", theme='dark'):
                 }}
                 .texto-conteudo {{
                     color: {text_color_primary};
-                    font-size: 1.8rem;
-                    line-height: 1.9;
+                    font-size: 5.4rem;
+                    line-height: 1.5;
                     text-align: center;
-                    font-weight: 400;
-                    letter-spacing: 0.3px;
+                    font-weight: 500;
+                    letter-spacing: 0.5px;
                 }}
                 .texto-conteudo strong,
                 .texto-conteudo b {{
@@ -1143,7 +1143,7 @@ def render_texto(texto, titulo="", theme='dark'):
                         padding: 40px 50px;
                     }}
                     .texto-conteudo {{
-                        font-size: 1.6rem;
+                        font-size: 4.8rem;
                     }}
                 }}
 
@@ -1165,8 +1165,8 @@ def render_texto(texto, titulo="", theme='dark'):
                         width: 4px;
                     }}
                     .texto-conteudo {{
-                        font-size: 1.3rem;
-                        line-height: 1.8;
+                        font-size: 3.9rem;
+                        line-height: 1.4;
                     }}
                 }}
 
@@ -1177,7 +1177,7 @@ def render_texto(texto, titulo="", theme='dark'):
                         gap: 10px;
                     }}
                     .texto-conteudo {{
-                        font-size: 1.15rem;
+                        font-size: 3rem;
                     }}
                 }}
             </style>

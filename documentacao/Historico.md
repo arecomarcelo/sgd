@@ -3813,3 +3813,27 @@ Exibir a mensagem configurada na tabela `VendaConfiguracao` (id=2) no Slideshow,
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+### 🕐 13:46 - Ajuste: Tamanho da Fonte 3x Maior
+
+#### 📝 O que foi pedido:
+Aumentar o tamanho da fonte da mensagem para 3x a escala atual.
+
+#### 🔧 Detalhamento da Solução:
+Ajustado o CSS da função `render_texto` em `panels.py`:
+
+| Resolução | Antes | Depois (3x) |
+|-----------|-------|-------------|
+| Desktop | 1.8rem | **5.4rem** |
+| ≤1200px | 1.6rem | **4.8rem** |
+| ≤768px | 1.3rem | **3.9rem** |
+| ≤480px | 1.15rem | **3rem** |
+
+- ✅ Ajustado `font-weight` de 400 para 500 (mais legível)
+- ✅ Ajustado `line-height` para melhor espaçamento
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `dashboard/panels.py` - Aumentado font-size 3x
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
