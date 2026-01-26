@@ -41,6 +41,7 @@ def get_dashboards_config(request):
                 'nome': config.Dashboard.Nome,
                 'descricao': config.Dashboard.Descricao,
                 'duracao': config.Duracao,
+                'mensagem': config.Mensagem,
             }
         )
 

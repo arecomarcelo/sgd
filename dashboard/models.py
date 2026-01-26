@@ -40,6 +40,9 @@ class Dashboard_Config(models.Model):
     )
     Ordem = models.IntegerField(verbose_name="Ordem de Exibição")
     Duracao = models.IntegerField(verbose_name="Duração (segundos)")
+    Mensagem = models.CharField(
+        max_length=255, verbose_name="Mensagem", null=True, blank=True
+    )
 
     def __str__(self):
         return f"{self.Ordem} - {self.Dashboard.Nome} ({self.Duracao}s)"

@@ -19,7 +19,6 @@ from dashboard.models import (
     Dashboard_Config,
     Dashboard_Log,
     RPA_Atualizacao,
-    VendaConfiguracao,
 )
 
 # Importa os painéis customizados
@@ -423,12 +422,12 @@ elif (
 ):
     render_ranking_produtos(theme=st.session_state.theme)
 elif 'mensagem' in nome_dashboard_normalizado or 'texto' in nome_dashboard_normalizado:
-    # Slide de mensagem - busca texto da VendaConfiguracao id=2 (somente mensagem, sem título)
-    try:
-        config_mensagem = VendaConfiguracao.objects.get(id=2)
-        texto_mensagem = config_mensagem.Valor
-    except VendaConfiguracao.DoesNotExist:
-        texto_mensagem = "Mensagem não configurada"
+    # Slide de mensagem - busca texto do campo Mensagem do Dashboard_Config atual
+    texto_mensagem = (
+        current_config.Mensagem
+        if current_config.Mensagem
+        else "Mensagem não configurada"
+    )
 
     render_texto(
         texto=texto_mensagem,

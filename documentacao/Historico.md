@@ -3837,3 +3837,43 @@ Ajustado o CSS da função `render_texto` em `panels.py`:
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+## 📅 26/01/2026
+
+### 🕐 13:55 - Ajuste: Texto Dinâmico via Dashboard_Config.Mensagem
+
+#### 📝 O que foi pedido:
+1. Observar os ajustes feitos nos modelos `Dashboard` e `Dashboard_Config` (já migrados e populados)
+2. Ajustar para que todas as informações utilizem o modelo ajustado
+3. No módulo de Configurações, o texto dinâmico não será mais gravado em `VendaConfiguracao`, mas no campo `Mensagem` do modelo `Dashboard_Config`
+
+#### 🔧 Detalhamento da Solução:
+
+**Modelo Dashboard_Config atualizado:**
+- ✅ Novo campo `Mensagem` (CharField, 255 caracteres, opcional) já migrado no banco
+
+**Alterações realizadas:**
+
+1. **`pages/02_⚙️_Gerenciar.py`** - Painel Texto Dinâmico:
+   - ✅ Alterado para buscar/gravar no campo `Dashboard_Config.Mensagem`
+   - ✅ Busca pelo Dashboard com nome contendo "Mensagem"
+   - ✅ Removida dependência de `VendaConfiguracao` para texto dinâmico
+
+2. **`pages/01_🎬_Slideshow.py`** - Slide de Mensagem:
+   - ✅ Alterado para ler `current_config.Mensagem` em vez de `VendaConfiguracao`
+   - ✅ Removido import do `VendaConfiguracao`
+
+3. **`dashboard/views.py`** - API de configurações:
+   - ✅ Adicionado campo `mensagem` no retorno JSON da API
+
+**Fluxo atualizado:**
+- O texto dinâmico agora é armazenado no campo `Mensagem` do `Dashboard_Config` correspondente ao Dashboard "Mensagem"
+- A leitura no Slideshow utiliza diretamente `current_config.Mensagem`
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `pages/02_⚙️_Gerenciar.py` - Texto dinâmico via Dashboard_Config
+- 📄 **ALTERADO**: `pages/01_🎬_Slideshow.py` - Leitura de mensagem via Dashboard_Config
+- 📄 **ALTERADO**: `dashboard/views.py` - Campo mensagem na API
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---

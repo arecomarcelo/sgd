@@ -76,13 +76,21 @@ st.markdown("---")
 # Painel de Texto Dinâmico
 st.subheader("💬 Texto Dinâmico")
 
-# Buscar valor atual do texto dinâmico
+# Buscar valor atual do texto dinâmico no Dashboard_Config do Dashboard "Mensagem"
 try:
-    config_texto = VendaConfiguracao.objects.get(id=2)
-    valor_texto_atual = config_texto.Valor
-except VendaConfiguracao.DoesNotExist:
+    config_mensagem = (
+        Dashboard_Config.objects.select_related('Dashboard')
+        .filter(Dashboard__Nome__icontains='Mensagem')
+        .first()
+    )
+    if config_mensagem:
+        valor_texto_atual = config_mensagem.Mensagem or ""
+    else:
+        valor_texto_atual = ""
+        st.warning("⚠️ Dashboard 'Mensagem' não encontrado no banco de dados")
+except Exception as e:
     valor_texto_atual = ""
-    st.warning("⚠️ Configuração de Mensagem não encontrada no banco de dados")
+    st.warning(f"⚠️ Erro ao buscar configuração de mensagem: {str(e)}")
 
 # Layout em colunas para o campo de texto dinâmico
 col_texto1, col_texto2 = st.columns([3, 1])
@@ -105,15 +113,20 @@ with col_texto2:
         help="Clique para salvar a mensagem",
     ):
         try:
-            config_texto = VendaConfiguracao.objects.get(id=2)
-            config_texto.Valor = novo_texto.strip() if novo_texto else ""
-            config_texto.save()
-            st.success("✅ Mensagem atualizada com sucesso!")
-            st.rerun()
-        except VendaConfiguracao.DoesNotExist:
-            st.error(
-                "❌ Erro: Configuração de Mensagem não encontrada no banco de dados"
+            config_mensagem = (
+                Dashboard_Config.objects.select_related('Dashboard')
+                .filter(Dashboard__Nome__icontains='Mensagem')
+                .first()
             )
+            if config_mensagem:
+                config_mensagem.Mensagem = novo_texto.strip() if novo_texto else ""
+                config_mensagem.save()
+                st.success("✅ Mensagem atualizada com sucesso!")
+                st.rerun()
+            else:
+                st.error(
+                    "❌ Erro: Dashboard 'Mensagem' não encontrado no banco de dados"
+                )
         except Exception as e:
             st.error(f"❌ Erro ao salvar mensagem: {str(e)}")
 
