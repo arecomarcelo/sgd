@@ -102,6 +102,17 @@
 
 - Ajuste **Gravação Mensagem Automática** no Modelo **Dashboard_Config**
 
+**12/02/2026**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+  
+
+### **09:53 - Commit 12**
+
+- Inserção Novos Vendedores: **André** e **João Victor**
+
 **dd/mm/2026**
 
 - #### ***Instalar requirements.txt***

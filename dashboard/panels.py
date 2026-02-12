@@ -573,6 +573,8 @@ def render_ranking_vendedores(theme='dark'):
         {"nome": "Giovana Lelis", "foto": "8"},
         {"nome": "Carlos Gabriel Carvalho Macedo", "foto": "9"},
         {"nome": "Cássio Gadagnoto", "foto": "10"},
+        {"nome": "André Souza", "foto": "11"},
+        {"nome": "João Victor", "foto": "12"},
     ]
 
     # Função para calcular vendas do mês atual para gauges
@@ -807,36 +809,35 @@ def render_ranking_vendedores(theme='dark'):
                     padding: 0;
                     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
                     background: {bg_color};
-                    overflow-y: auto;
+                    overflow: hidden;
                 }}
                 .ranking-vendedores-container {{
                     background: {bg_color};
-                    min-height: 100vh;
                     width: 100vw;
-                    padding: 30px 40px 180px 40px;
+                    padding: 15px 30px 10px 30px;
                 }}
                 .ranking-title {{
                     color: {text_color_primary};
-                    font-size: 2rem;
+                    font-size: 1.8rem;
                     font-weight: 700;
-                    margin-bottom: 35px;
+                    margin-bottom: 15px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 12px;
+                    gap: 10px;
                     text-align: center;
                 }}
                 .ranking-grid {{
                     display: grid;
-                    grid-template-columns: repeat(5, 1fr);
-                    gap: 20px 18px;
+                    grid-template-columns: repeat(6, 1fr);
+                    gap: 12px 10px;
                     max-width: 1650px;
                     margin: 0 auto;
                 }}
                 .vendedor-card {{
                     background: {card_bg};
-                    border-radius: 16px;
-                    padding: 20px 15px;
+                    border-radius: 14px;
+                    padding: 12px 10px;
                     text-align: center;
                     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
                     border: 1px solid #44475a;
@@ -852,10 +853,10 @@ def render_ranking_vendedores(theme='dark'):
                     border-color: #8be9fd;
                 }}
                 .vendedor-avatar {{
-                    width: 85px;
-                    height: 85px;
+                    width: 70px;
+                    height: 70px;
                     border-radius: 50%;
-                    margin: 0 auto 12px;
+                    margin: 0 auto 8px;
                     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
                     overflow: hidden;
                     display: flex;
@@ -870,50 +871,50 @@ def render_ranking_vendedores(theme='dark'):
                     border-radius: 50%;
                 }}
                 .vendedor-avatar-iniciais {{
-                    width: 85px;
-                    height: 85px;
+                    width: 70px;
+                    height: 70px;
                     border-radius: 50%;
                     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                     color: white;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 1.7rem;
+                    font-size: 1.5rem;
                     font-weight: 700;
                 }}
                 .vendedor-nome {{
                     color: {text_color_primary};
                     font-weight: 600;
-                    font-size: 0.95rem;
-                    margin-bottom: 8px;
-                    min-height: 38px;
-                    max-height: 38px;
+                    font-size: 0.85rem;
+                    margin-bottom: 4px;
+                    min-height: 32px;
+                    max-height: 32px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     line-height: 1.2;
                     overflow: hidden;
                     text-overflow: ellipsis;
-                    padding: 0 5px;
+                    padding: 0 3px;
                     word-break: break-word;
                 }}
                 .vendedor-valor {{
                     color: {text_color_primary};
-                    font-size: 1.3rem;
+                    font-size: 1.1rem;
                     font-weight: 700;
-                    margin-bottom: 12px;
+                    margin-bottom: 6px;
                     letter-spacing: -0.5px;
                 }}
                 .vendedor-stats {{
                     display: flex;
                     justify-content: center;
-                    gap: 12px;
-                    margin-top: 8px;
+                    gap: 8px;
+                    margin-top: 4px;
                 }}
                 .stat-container {{
                     position: relative;
-                    width: 55px;
-                    height: 55px;
+                    width: 45px;
+                    height: 45px;
                     flex-shrink: 0;
                 }}
                 .stat-circle {{
@@ -925,7 +926,7 @@ def render_ranking_vendedores(theme='dark'):
                     top: 50%;
                     left: 50%;
                     transform: translate(-50%, -50%);
-                    font-size: 0.8rem;
+                    font-size: 0.7rem;
                     font-weight: 700;
                     color: {text_color_primary};
                 }}
@@ -950,14 +951,14 @@ def render_ranking_vendedores(theme='dark'):
 
                 @media (max-width: 600px) {{
                     .ranking-vendedores-container {{
-                        padding: 30px 20px 180px 20px;
+                        padding: 15px 15px 10px 15px;
                     }}
                     .ranking-title {{
-                        font-size: 1.8rem;
+                        font-size: 1.5rem;
                     }}
                     .ranking-grid {{
                         grid-template-columns: 1fr;
-                        gap: 20px;
+                        gap: 12px;
                     }}
                 }}
             </style>
@@ -977,8 +978,8 @@ def render_ranking_vendedores(theme='dark'):
         </html>
     """
 
-    # Sempre 10 vendedores em grid 5x2 = altura fixa
-    components.html(html_content, height=700, scrolling=False)
+    # 12 vendedores em grid 6x2 = sem barra de rolagem
+    components.html(html_content, height=620, scrolling=False)
 
 
 def render_texto(texto, titulo="", theme='dark'):

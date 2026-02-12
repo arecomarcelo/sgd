@@ -3877,3 +3877,68 @@ Ajustado o CSS da função `render_texto` em `panels.py`:
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+## 📅 12/02/2026
+
+### ⏰ 09:24 - Adição de 2 Novos Vendedores aos Painéis
+
+#### 📝 Solicitação:
+Adicionar 2 novos vendedores ao painel de Ranking de Vendedores:
+- 11 - André Souza
+- 12 - João Victor
+
+#### ✅ Solução Implementada:
+1. **`dashboard/panels.py`** - Lista de vendedores (`vendedores_tabela`):
+   - ➕ Adicionado `{"nome": "André Souza", "foto": "11"}`
+   - ➕ Adicionado `{"nome": "João Victor", "foto": "12"}`
+   - 📐 Ajustada altura do componente HTML de 700px para 850px para acomodar 12 cards (grid 5x3)
+   - 📝 Atualizado comentário de "10 vendedores" para "12 vendedores"
+
+2. **Fotos** já existiam na pasta `imagens/fotos/`:
+   - 🖼️ `11.png` (André Souza)
+   - 🖼️ `12.png` (João Victor)
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `dashboard/panels.py` - Adição de 2 novos vendedores e ajuste de altura
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
+
+### ⏰ 09:29 - Ajuste de Altura do Ranking de Vendedores (Barra de Rolagem)
+
+#### 📝 Solicitação:
+Ajustar a altura do painel Ranking de Vendedores para não gerar barra de rolagem vertical.
+
+#### ✅ Solução Implementada:
+1. **`dashboard/panels.py`** - CSS do painel `render_ranking_vendedores`:
+   - 🔧 Removido `min-height: 100vh` do container (forçava altura mínima desnecessária)
+   - 🔧 Reduzido padding inferior de `180px` para `20px` (desktop e mobile)
+   - 🔧 Alterado `overflow-y: auto` para `overflow: hidden` no body (elimina scrollbar)
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `dashboard/panels.py` - Ajuste de CSS para eliminar barra de rolagem
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
+
+### ⏰ 09:34 - Correção Definitiva da Barra de Rolagem no Ranking de Vendedores
+
+#### 📝 Solicitação:
+Conteúdo do Ranking de Vendedores ainda gerava barra de rolagem vertical (3ª linha cortada com grid 5 colunas).
+
+#### ✅ Solução Implementada:
+1. **`dashboard/panels.py`** - Reestruturação do grid e compactação dos cards:
+   - 🔄 Grid alterado de **5 colunas** para **6 colunas** (12 vendedores = 2 linhas perfeitas de 6)
+   - 📐 Avatar reduzido de 85px para 70px
+   - 📐 Paddings e margens compactados em todos os elementos
+   - 📐 Fontes ajustadas (nome: 0.85rem, valor: 1.1rem, stat: 0.7rem)
+   - 📐 Stat circles reduzidos de 55px para 45px
+   - 📐 Gaps do grid reduzidos (12px x 10px)
+   - 📐 Altura do componente ajustada de 850px para 620px
+   - ✅ Resultado: 12 vendedores exibidos em 2 linhas sem barra de rolagem
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `dashboard/panels.py` - Grid 6 colunas e compactação de cards
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
