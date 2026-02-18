@@ -1,5 +1,44 @@
 # 📋 Histórico de Interações - Projeto SGD
 
+## 📅 18/02/2026
+
+### ⏰ 14:05 - Ajuste de Título da Seção Vendedores
+
+#### 📝 O que foi pedido:
+Alterar o título "👥 Vendedores - Percentual de Meta" para "👥 Vendedores - Percentual de Meta Pessoal"
+
+#### 🔧 Detalhamento da Solução:
+- ✅ Título do `st.subheader` atualizado conforme solicitado
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `pages/02_⚙️_Gerenciar.py` - Título da seção ajustado
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
+
+### ⏰ 13:54 - Grid de Vendedores no Painel Meta de Vendas
+
+#### 📝 O que foi pedido:
+Implementar uma grid no módulo ⚙️ Gerenciar Dashboards, abaixo do painel 🎯 Meta de Vendas, que:
+1. Liste os vendedores com Nome, Curto e Percentual
+2. Permita editar os campos Curto e Percentual
+3. Exiba botão Salvar (💾) por linha para atualizar os dados
+
+#### 🔧 Detalhamento da Solução:
+- ✅ Adicionados campos `curto` (CharField) e `percentual` (DecimalField) ao modelo `Vendedores` (mapeados para colunas existentes no banco)
+- ✅ Criada grid com 4 colunas: Nome (somente leitura), Curto (editável), Percentual (editável 0-100%), Ações (botão salvar)
+- ✅ Campo Nome exibido como `disabled` para evitar alterações acidentais
+- ✅ Botão salvar com ícone 💾 e tooltip descritivo por vendedor
+- ✅ Labels visíveis apenas na primeira linha para manter layout limpo
+- ✅ Tratamento de erro e mensagem de sucesso ao salvar
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `dashboard/models.py` - Adicionados campos `curto` e `percentual` ao modelo Vendedores
+- 📄 **ALTERADO**: `pages/02_⚙️_Gerenciar.py` - Adicionada grid de vendedores com edição inline
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
+
 ## 📅 27/10/2025
 
 ### ⏰ 10:16 - Criação da Documentação Inicial do Projeto

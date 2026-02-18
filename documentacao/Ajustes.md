@@ -113,7 +113,17 @@
 
 - Inserção Novos Vendedores: **André** e **João Victor**
 
-**dd/mm/2026**
+**18/02/2026**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+  
+
+### **14:49 - Commit 13**
+
+- Painel **Configurações**:
+    - Atualização de **Nome Curto** e **Percentual Meta**
 
 - #### ***Instalar requirements.txt***
   

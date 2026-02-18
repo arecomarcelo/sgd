@@ -195,7 +195,9 @@ class Vendedores(models.Model):
         verbose_name = "Vendedor"
         verbose_name_plural = "Vendedores"
 
-    nome = models.CharField(db_column="Nome", max_length=100)
+    nome = models.CharField(db_column="Nome", max_length=100, primary_key=True)
+    curto = models.CharField(db_column="Curto", max_length=50, blank=True, null=True)
+    percentual = models.IntegerField(db_column="Percentual", blank=True, null=True)
 
     def __str__(self):
         return self.nome

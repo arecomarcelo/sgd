@@ -9,7 +9,7 @@ import streamlit as st
 import django_setup  # Configura Django ORM
 
 # Importa os modelos Django
-from dashboard.models import Dashboard, Dashboard_Config, VendaConfiguracao
+from dashboard.models import Dashboard, Dashboard_Config, VendaConfiguracao, Vendedores
 
 st.set_page_config(page_title="Gerenciar Dashboards", page_icon="⚙️", layout="wide")
 
@@ -70,6 +70,65 @@ with col_meta2:
                 st.error(f"❌ Erro ao salvar meta: {str(e)}")
         else:
             st.warning("⚠️ Por favor, digite um valor válido para a meta")
+
+st.markdown("---")
+
+# Grid de Vendedores - Percentual de Meta
+st.subheader("👥 Vendedores - Percentual de Meta Pessoal")
+
+vendedores_list = Vendedores.objects.all().order_by('nome')
+
+if vendedores_list.exists():
+    for idx, vendedor in enumerate(vendedores_list):
+        col_nome, col_curto, col_percentual, col_acao = st.columns([3, 2, 2, 1])
+
+        with col_nome:
+            st.text_input(
+                "Nome",
+                value=vendedor.nome or "",
+                disabled=True,
+                key=f"vend_nome_{idx}",
+                label_visibility="collapsed" if idx > 0 else "visible",
+            )
+
+        with col_curto:
+            novo_curto = st.text_input(
+                "Curto",
+                value=vendedor.curto or "",
+                placeholder="Nome curto",
+                key=f"vend_curto_{idx}",
+                label_visibility="collapsed" if idx > 0 else "visible",
+            )
+
+        with col_percentual:
+            novo_percentual = st.number_input(
+                "Percentual",
+                value=vendedor.percentual if vendedor.percentual else 0,
+                min_value=0,
+                max_value=100,
+                step=1,
+                key=f"vend_perc_{idx}",
+                label_visibility="collapsed" if idx > 0 else "visible",
+            )
+
+        with col_acao:
+            if idx == 0:
+                st.write("Ações")
+            if st.button(
+                "💾",
+                key=f"vend_save_{idx}",
+                help=f"Salvar alterações do vendedor {vendedor.nome}",
+            ):
+                try:
+                    vendedor.curto = novo_curto.strip() if novo_curto else ""
+                    vendedor.percentual = novo_percentual
+                    vendedor.save(update_fields=["curto", "percentual"])
+                    st.success(f"✅ Vendedor '{vendedor.nome}' atualizado!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"❌ Erro ao salvar: {str(e)}")
+else:
+    st.info("📭 Nenhum vendedor cadastrado")
 
 st.markdown("---")
 
