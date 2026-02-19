@@ -854,7 +854,7 @@ def render_ranking_vendedores(theme='dark'):
                     letter-spacing: -0.5px;
                 }}
                 .vendedor-mes-label {{
-                    color: #6272a4;
+                    color: #f8f8f2;
                     font-size: 0.75rem;
                     font-weight: 700;
                     margin-bottom: 5px;

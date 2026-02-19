@@ -2,6 +2,22 @@
 
 ## 📅 19/02/2026
 
+### ⏰ 16:00 - Ajuste de Formatação: Cor do texto "Mês de 2025= R$ ..." igualada ao texto de meta
+
+#### 🎯 O que foi pedido:
+Ajustar o texto "Mês de 2025= R$ 2.373.845,14" com a mesma formatação (Fonte e Cor) do texto "75.5% meta do mês batida".
+
+#### 🔧 Solução:
+- Identificado que a classe CSS `.vendedor-mes-label` usava `color: #6272a4` (azul-cinza)
+- A classe `.vendedor-meta` usava `color: #f8f8f2` (branco/claro)
+- Alterada a cor de `.vendedor-mes-label` para `#f8f8f2`, ficando idêntica ao `.vendedor-meta`
+- Fonte (`0.75rem`) e peso (`font-weight: 700`) já eram iguais nas duas classes
+
+#### 📁 Arquivos Alterados:
+- `dashboard/panels.py` — linha 857: `color: #6272a4` → `color: #f8f8f2`
+
+---
+
 ### ⏰ 15:30 - Correção de Cálculo: Filtro de situações no período anterior removido
 
 #### 🎯 O que foi pedido:
