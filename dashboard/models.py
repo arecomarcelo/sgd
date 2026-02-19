@@ -171,6 +171,9 @@ class Vendas(models.Model):
     clientenome = models.CharField(db_column="ClienteNome", max_length=100)
     vendedornome = models.CharField(db_column="VendedorNome", max_length=100)
     data = models.CharField(db_column="Data", max_length=100)
+    prazoentrega = models.CharField(
+        db_column="PrazoEntrega", max_length=100, null=True, blank=True
+    )
     situacaonome = models.CharField(db_column="SituacaoNome", max_length=100)
     nomecanalvenda = models.CharField(db_column="NomeCanalVenda", max_length=100)
     condicaopagamento = models.CharField(db_column="CondicaoPagamento", max_length=100)

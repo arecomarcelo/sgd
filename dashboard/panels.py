@@ -577,66 +577,59 @@ def render_ranking_vendedores(theme='dark'):
         {"nome": "João Victor", "foto": "12"},
     ]
 
-    # Função para calcular vendas do mês atual para gauges
-    def calcular_vendas_mes_atual_para_gauge(vendedores_nomes):
-        """
-        Realizado: 01 do mês atual até hoje
-        Meta: 01 do mesmo mês do ano anterior até o mesmo dia
-        """
+    # Calcular período atual (mês atual)
+    hoje = datetime.now()
+    data_inicio = datetime(hoje.year, hoje.month, 1).date()
+    data_fim = hoje.date()
+    ano_anterior = (data_inicio - relativedelta(years=1)).year
+
+    # Buscar nomes curtos e percentuais dos vendedores
+    dados_vendedores = {}
+    try:
+        for v in Vendedores.objects.all():
+            dados_vendedores[v.nome] = {
+                "curto": v.curto if v.curto else v.nome,
+                "percentual": float(v.percentual) if v.percentual else 0.0,
+            }
+    except Exception:
+        pass
+
+    # Calcular vendas do mesmo período no ano anterior via SQL (igual ao SGR)
+    def calcular_vendas_periodo_anterior(data_inicio, data_fim):
+        """Calcula vendas do mesmo período no ano anterior usando SQL com cast de data"""
         try:
-            hoje = datetime.now()
-            data_inicio_atual = datetime(hoje.year, hoje.month, 1).date()
-            data_fim_atual = hoje.date()
+            from django.db import connection
 
-            # Mesmo período do ano anterior
-            data_inicio_anterior = data_inicio_atual - relativedelta(years=1)
-            data_fim_anterior = data_fim_atual - relativedelta(years=1)
+            data_inicio_ant = data_inicio - relativedelta(years=1)
+            data_fim_ant = data_fim - relativedelta(years=1)
 
-            # Situações a serem excluídas
-            situacoes_excluidas = [
-                "Cancelada (sem financeiro)",
-                "Não considerar - Excluidos",
+            query = """
+                SELECT TRIM("VendedorNome"), "ValorTotal"
+                FROM "Vendas"
+                WHERE "Data"::DATE BETWEEN %s AND %s
+                AND TRIM("VendedorNome") IN (SELECT "Nome" FROM "Vendedores")
+            """
+            params = [
+                data_inicio_ant,
+                data_fim_ant,
             ]
 
-            # Buscar lista de vendedores válidos
-            vendedores_validos = set(Vendedores.objects.values_list('nome', flat=True))
+            vendas_por_vendedor = {}
+            with connection.cursor() as cursor:
+                cursor.execute(query, params)
+                for nome, valor_str in cursor.fetchall():
+                    if not nome:
+                        continue
+                    valor = parse_valor(valor_str) if valor_str else Decimal("0")
+                    if nome not in vendas_por_vendedor:
+                        vendas_por_vendedor[nome] = Decimal("0")
+                    vendas_por_vendedor[nome] += valor
 
-            # Buscar vendas do período atual (realizado)
-            vendas_atual = Vendas.objects.filter(
-                data__gte=data_inicio_atual.strftime("%d/%m/%Y"),
-                data__lte=data_fim_atual.strftime("%d/%m/%Y"),
-            ).exclude(situacaonome__in=situacoes_excluidas)
+            return {k: float(v) for k, v in vendas_por_vendedor.items()}
+        except Exception:
+            return {}
 
-            # Buscar vendas do período anterior (meta)
-            vendas_anterior = Vendas.objects.filter(
-                data__gte=data_inicio_anterior.strftime("%d/%m/%Y"),
-                data__lte=data_fim_anterior.strftime("%d/%m/%Y"),
-            ).exclude(situacaonome__in=situacoes_excluidas)
-
-            # Processar realizado
-            vendas_realizadas = {}
-            for venda in vendas_atual:
-                nome = venda.vendedornome.strip() if venda.vendedornome else ""
-                # Filtrar apenas vendedores válidos
-                if nome in vendedores_nomes and nome in vendedores_validos:
-                    if nome not in vendas_realizadas:
-                        vendas_realizadas[nome] = Decimal("0")
-                    vendas_realizadas[nome] += parse_valor(venda.valortotal)
-
-            # Processar meta
-            vendas_meta = {}
-            for venda in vendas_anterior:
-                nome = venda.vendedornome.strip() if venda.vendedornome else ""
-                # Filtrar apenas vendedores válidos
-                if nome in vendedores_nomes and nome in vendedores_validos:
-                    if nome not in vendas_meta:
-                        vendas_meta[nome] = Decimal("0")
-                    vendas_meta[nome] += parse_valor(venda.valortotal)
-
-            return vendas_realizadas, vendas_meta
-
-        except Exception as e:
-            return {}, {}
+    vendas_periodo_anterior = calcular_vendas_periodo_anterior(data_inicio, data_fim)
 
     # Buscar vendas do período (seguem os filtros aplicados)
     vendas = get_vendas_periodo()
@@ -656,51 +649,28 @@ def render_ranking_vendedores(theme='dark'):
         vendedores_stats[vendedor]["total"] += valor
         vendedores_stats[vendedor]["qtd"] += 1
 
-    # Calcular total geral para percentuais (do filtro aplicado)
-    total_geral = sum(stats["total"] for stats in vendedores_stats.values())
-
-    # Calcular vendas do mês atual para gauges (sempre mês atual, independente dos filtros)
-    vendedores_nomes = [v["nome"] for v in vendedores_tabela]
-    vendas_realizadas_gauge, vendas_meta_gauge = calcular_vendas_mes_atual_para_gauge(
-        vendedores_nomes
-    )
-
     # Preparar dados completos dos vendedores
     vendedores_completos = []
     for vendedor in vendedores_tabela:
         nome = vendedor["nome"]
-        # Gauge: sempre mês atual
-        meta_vendedor = float(vendas_meta_gauge.get(nome, 0))
-        realizado_vendedor = float(vendas_realizadas_gauge.get(nome, 0))
+        dados_vend = dados_vendedores.get(nome, {})
+        nome_curto = dados_vend.get("curto", nome)
+        percentual_meta = dados_vend.get("percentual", 0.0)
+        vendas_ant = float(vendas_periodo_anterior.get(nome, 0))
+        total_valor = (
+            float(vendedores_stats[nome]["total"]) if nome in vendedores_stats else 0.0
+        )
 
-        if nome in vendedores_stats:
-            # Vendedor com vendas no filtro aplicado
-            vendedores_completos.append(
-                {
-                    "nome": nome,
-                    "foto": vendedor["foto"],
-                    "total_valor": float(vendedores_stats[nome]["total"]),
-                    "percentual": float(
-                        (vendedores_stats[nome]["total"] / total_geral * 100)
-                        if total_geral > 0
-                        else 0
-                    ),
-                    "meta": meta_vendedor,
-                    "realizado": realizado_vendedor,
-                }
-            )
-        else:
-            # Vendedor sem vendas no filtro
-            vendedores_completos.append(
-                {
-                    "nome": nome,
-                    "foto": vendedor["foto"],
-                    "total_valor": 0.0,
-                    "percentual": 0.0,
-                    "meta": meta_vendedor,
-                    "realizado": realizado_vendedor,
-                }
-            )
+        vendedores_completos.append(
+            {
+                "nome": nome,
+                "nome_curto": nome_curto,
+                "foto": vendedor["foto"],
+                "total_valor": total_valor,
+                "vendas_ano_anterior": vendas_ant,
+                "percentual_meta": percentual_meta,
+            }
+        )
 
     # Ordenar por valor total (maior para menor)
     vendedores_ordenados = sorted(
@@ -738,15 +708,13 @@ def render_ranking_vendedores(theme='dark'):
     # Gerar HTML dos cards
     cards_html = ""
     for vendedor in vendedores_ordenados:
-        # Calcular percentual da meta (gauge)
-        percentual_meta = (
-            (vendedor["realizado"] / vendedor["meta"] * 100)
-            if vendedor["meta"] > 0
-            else 0
+        # Calcular percentual meta batida: vendas_atuais / (vendas_ant * (1 + %/100)) * 100
+        vendas_ant = vendedor["vendas_ano_anterior"]
+        percentual_meta = vendedor["percentual_meta"]
+        meta = vendas_ant * (1 + percentual_meta / 100) if vendas_ant > 0 else 0
+        percentual_meta_batida = (
+            (vendedor["total_valor"] / meta * 100) if meta > 0 else 0
         )
-
-        # Percentual do total de vendas (do filtro aplicado)
-        percentual_vendas = vendedor["percentual"]
 
         # Carregar foto
         foto_base64 = get_vendedor_foto(vendedor["foto"])
@@ -765,30 +733,10 @@ def render_ranking_vendedores(theme='dark'):
             <div class="vendedor-avatar">
                 {avatar_html}
             </div>
-            <div class="vendedor-nome">{vendedor["nome"]}</div>
+            <div class="vendedor-nome">{vendedor["nome_curto"]}</div>
             <div class="vendedor-valor">{format_currency(vendedor["total_valor"])}</div>
-            <div class="vendedor-stats">
-                <div class="stat-container">
-                    <svg class="stat-circle" viewBox="0 0 36 36">
-                        <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" stroke-width="3"/>
-                        <circle cx="18" cy="18" r="16" fill="none" stroke="#60A5FA" stroke-width="3"
-                                stroke-dasharray="{percentual_vendas * 1.005} 100.5"
-                                stroke-linecap="round"
-                                transform="rotate(-90 18 18)"/>
-                    </svg>
-                    <div class="stat-value">{percentual_vendas:.1f}%</div>
-                </div>
-                <div class="stat-container">
-                    <svg class="stat-circle" viewBox="0 0 36 36">
-                        <circle cx="18" cy="18" r="16" fill="none" stroke="#e5e7eb" stroke-width="3"/>
-                        <circle cx="18" cy="18" r="16" fill="none" stroke="#1e40af" stroke-width="3"
-                                stroke-dasharray="{percentual_meta * 1.005} 100.5"
-                                stroke-linecap="round"
-                                transform="rotate(-90 18 18)"/>
-                    </svg>
-                    <div class="stat-value">{percentual_meta:.0f}%</div>
-                </div>
-            </div>
+            <div class="vendedor-mes-label">Mês de {ano_anterior}= {format_currency(vendas_ant)}</div>
+            <div class="vendedor-meta">{percentual_meta_batida:.1f}% meta do mês batida</div>
         </div>
         """
 
@@ -905,30 +853,16 @@ def render_ranking_vendedores(theme='dark'):
                     margin-bottom: 6px;
                     letter-spacing: -0.5px;
                 }}
-                .vendedor-stats {{
-                    display: flex;
-                    justify-content: center;
-                    gap: 8px;
-                    margin-top: 4px;
-                }}
-                .stat-container {{
-                    position: relative;
-                    width: 45px;
-                    height: 45px;
-                    flex-shrink: 0;
-                }}
-                .stat-circle {{
-                    width: 100%;
-                    height: 100%;
-                }}
-                .stat-value {{
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    font-size: 0.7rem;
+                .vendedor-mes-label {{
+                    color: #6272a4;
+                    font-size: 0.75rem;
                     font-weight: 700;
-                    color: {text_color_primary};
+                    margin-bottom: 5px;
+                }}
+                .vendedor-meta {{
+                    color: #f8f8f2;
+                    font-size: 0.75rem;
+                    font-weight: 700;
                 }}
 
                 @media (max-width: 1600px) {{

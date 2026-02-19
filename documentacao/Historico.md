@@ -1,5 +1,127 @@
 # 📋 Histórico de Interações - Projeto SGD
 
+## 📅 19/02/2026
+
+### ⏰ 15:30 - Correção de Cálculo: Filtro de situações no período anterior removido
+
+#### 🎯 O que foi pedido:
+Valores dos vendedores Cássio, César, Nilton e Carlos ainda não batem entre SGD e SGR.
+Usuário confirmou: **"sempre mês atual de 01 a dia atual"** — período fixo, não filtrado por usuário.
+
+#### 🔍 Causa Raiz:
+A função `calcular_vendas_periodo_anterior` no SGD filtrava situações com:
+```sql
+AND "SituacaoNome" NOT IN ('Cancelada (sem financeiro)', 'Não considerar - Excluidos')
+```
+Porém, o SGR **não aplica nenhum filtro de situação** ao buscar as vendas do ano anterior (`get_vendas_filtradas` chamada sem `situacoes_excluir`). Isso gerava totais menores no SGD, causando a divergência.
+
+#### 🔧 Detalhamento da Solução:
+- ❌ Removida a cláusula `NOT IN` da query SQL de `calcular_vendas_periodo_anterior`
+- ✅ Período continua fixo: `01 do mês atual` → `dia atual` (mês anterior de 1 ano atrás)
+- ✅ Alinhado comportamento com SGR: período anterior sem filtro de situações
+
+#### 📁 Arquivos Alterados:
+- `dashboard/panels.py` — função `calcular_vendas_periodo_anterior`: removido filtro `NOT IN` de situações
+
+---
+
+### ⏰ 14:45 - Correção de Cálculo: Vendas período anterior com valores incorretos
+
+#### 🎯 O que foi pedido:
+Comparando `sgr.png` (correto) com `sgd.png` (incorreto), os valores de "Mês de 2025" e "% meta do mês batida" estavam divergentes — César mostrava R$ 32.048 (SGD) vs valor correto ~R$ 750K+ (SGR), resultando em 3188% de meta.
+
+#### 🔍 Causa Raiz:
+A função `calcular_vendas_periodo_anterior` usava **comparação manual de strings** para filtrar datas:
+- Convertia `Data` para `"YYYY-MM-DD"` manualmente
+- Comparação `di_str <= venda_str <= df_str` falha quando datas históricas têm formato diferente (ex: `DD-MM-YYYY`, timestamp, etc.)
+- O SGR usa `"Data"::DATE BETWEEN %s AND %s` — PostgreSQL faz o cast, tratando todos os formatos corretamente
+
+#### 🔧 Detalhamento da Solução:
+- 🔄 Substituída a iteração `Vendas.objects.all()` + comparação manual por **raw SQL** com `"Data"::DATE BETWEEN %s AND %s`
+- Mesma query usada pelo SGR, garantindo consistência de resultados
+- Mantida a função `parse_valor` para processar `ValorTotal`
+
+#### 📁 Arquivos Alterados:
+- `dashboard/panels.py` — função `calcular_vendas_periodo_anterior`: agora usa SQL direto
+
+---
+
+### ⏰ 14:30 - Ajuste visual: Mês de {ano} em linha única e negrito
+
+#### 🎯 O que foi pedido:
+Texto "Mês de 2025 R$ 2.247.485,06" deve aparecer em uma única linha no formato `Mês de 2025= R$ 2.373.845,14` e em **negrito**.
+
+#### 🔧 Detalhamento da Solução:
+- 🔄 Card HTML: dois `<div>` separados (`vendedor-mes-label` + `vendedor-mes-valor`) unificados em um único `<div class="vendedor-mes-label">Mês de {ano}= {valor}</div>`
+- 🔄 CSS `.vendedor-mes-label`: `font-weight: 700` (negrito), `font-size: 0.75rem`, removido estilo `.vendedor-mes-valor` (não mais utilizado)
+
+#### 📁 Arquivos Alterados:
+- `dashboard/panels.py` — card HTML e CSS do `.vendedor-mes-label`
+
+---
+
+### ⏰ 14:15 - Ajuste Cards Ranking: Mês de {ano} e % meta do mês batida
+
+#### 🎯 O que foi pedido:
+Os cards do Ranking de Vendedores no painel SGD estavam faltando as informações "Mês de {ano} (dinâmico)" e "% meta do mês batida". O layout deveria ser semelhante à imagem de referência (`imagens/card.png`).
+
+#### 🔍 Causa Raiz:
+O `panels.py` do SGD usava a lógica antiga com **gauges SVG** (dois círculos animados), sem os campos de período anterior e % meta. A lógica atual do SGR já havia evoluído para exibir essas informações como texto.
+
+#### 🔧 Detalhamento da Solução:
+1. **Removida** função `calcular_vendas_mes_atual_para_gauge` (lógica antiga de gauge)
+2. **Adicionada** função `calcular_vendas_periodo_anterior()` — calcula vendas do mesmo período no ano anterior iterando sobre `Vendas.objects.all()`
+3. **Adicionada** consulta de `nome_curto` e `percentual` da tabela `Vendedores`
+4. **Calculado** `ano_anterior` dinamicamente a partir do mês atual
+5. **Atualizado** `vendedores_completos` com campos: `nome_curto`, `vendas_ano_anterior`, `percentual_meta`
+6. **Fórmula**: `Meta = vendas_ant × (1 + Percentual/100)` → `% meta batida = total_valor / Meta × 100`
+7. **Card HTML** substituído: SVG gauges → `Mês de {ano}`, valor anterior, `% meta do mês batida`
+8. **CSS** atualizado: removidos estilos de gauge, adicionados `.vendedor-mes-label`, `.vendedor-mes-valor`, `.vendedor-meta`
+
+#### 📁 Arquivos Alterados:
+- `dashboard/panels.py` — função `render_ranking_vendedores`: nova lógica de dados e novo HTML dos cards
+
+---
+
+### ⏰ 13:50 - Correção: Campo PrazoEntrega no modelo Vendas
+
+#### 🎯 O que foi pedido:
+Novo campo `PrazoEntrega` foi adicionado na tabela `Vendas` no banco de dados. A aplicação apresentava erro `column Vendas.prazoentrega does not exist` ao tentar renderizar o Ranking de Vendedores.
+
+#### 🔍 Causa Raiz:
+- O campo `prazoentrega` no modelo `Vendas` estava sem o parâmetro `db_column`
+- Django gerava a query com `prazoentrega` (minúsculo), mas o banco possui `PrazoEntrega` (camelCase)
+
+#### 🔧 Detalhamento da Solução:
+- 🔄 Adicionado `db_column="PrazoEntrega"` ao campo no modelo `Vendas`
+- Sem geração de migração (`managed = False`)
+
+#### 📁 Arquivos Alterados:
+- `dashboard/models.py` — campo `prazoentrega` com `db_column="PrazoEntrega"`
+
+---
+
+### ⏰ 10:15 - Ajuste de Layout: Cards do Ranking de Vendedores (SGR)
+
+#### 🎯 O que foi pedido:
+Baseado no documento `documentacao/Ajustes Ranking Vendedores.md`, aplicar os ajustes necessários de layout e cálculos nos cards do Ranking de Vendedores, sem alterar fontes ou cores.
+
+#### 🔍 Verificação Realizada (projeto SGR):
+- ✅ `get_vendedores_com_nome_curto()` no repositório — já implementado
+- ✅ Lógica de `_render_vendedores_com_fotos()` com dados curtos e percentual — já implementada
+- ✅ `_render_card_vendedor()` com novo layout, fórmula e `vendas_ano_anterior` — já implementado
+- ⚠️ Ajuste de layout: label e valor do período anterior estavam na mesma linha
+
+#### 🔧 Detalhamento da Solução:
+- 🔄 Separação do label `Mês de {ano}=` e do valor `{format_currency(vendas_ant)}` em dois `<div>` distintos
+- Mesmas cores (#555) e tamanho de fonte (0.75rem) mantidos
+- Cálculo `% meta batida = vendas_atuais / (vendas_anterior × (1 + Percentual/100)) × 100` sem alteração
+
+#### 📁 Arquivos Alterados:
+- `/media/areco/Backup/Oficial/Projetos/sgr/app.py` — função `_render_card_vendedor`
+
+---
+
 ## 📅 18/02/2026
 
 ### ⏰ 14:05 - Ajuste de Título da Seção Vendedores
