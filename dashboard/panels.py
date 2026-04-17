@@ -594,36 +594,45 @@ def render_ranking_vendedores(theme='dark'):
     except Exception:
         pass
 
-    # Calcular vendas do mesmo período no ano anterior via SQL (igual ao SGR)
+    # Calcular vendas do mesmo período no ano anterior via ORM
     def calcular_vendas_periodo_anterior(data_inicio, data_fim):
-        """Calcula vendas do mesmo período no ano anterior usando SQL com cast de data"""
+        """Calcula vendas do mesmo período no ano anterior usando ORM com filtragem em Python"""
         try:
-            from django.db import connection
-
             data_inicio_ant = data_inicio - relativedelta(years=1)
             data_fim_ant = data_fim - relativedelta(years=1)
 
-            query = """
-                SELECT TRIM("VendedorNome"), "ValorTotal"
-                FROM "Vendas"
-                WHERE "Data"::DATE BETWEEN %s AND %s
-                AND TRIM("VendedorNome") IN (SELECT "Nome" FROM "Vendedores")
-            """
-            params = [
-                data_inicio_ant,
-                data_fim_ant,
-            ]
+            di_str = data_inicio_ant.strftime("%Y-%m-%d")
+            df_str = data_fim_ant.strftime("%Y-%m-%d")
+
+            vendedores_validos = set(Vendedores.objects.values_list("nome", flat=True))
 
             vendas_por_vendedor = {}
-            with connection.cursor() as cursor:
-                cursor.execute(query, params)
-                for nome, valor_str in cursor.fetchall():
-                    if not nome:
+            for venda in Vendas.objects.all():
+                vendedor = venda.vendedornome.strip() if venda.vendedornome else ""
+                if not vendedor or vendedor not in vendedores_validos:
+                    continue
+
+                data_venda = venda.data.strip() if venda.data else ""
+                if "/" in data_venda:
+                    parts = data_venda.split("/")
+                    if len(parts) == 3:
+                        venda_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
+                    else:
                         continue
-                    valor = parse_valor(valor_str) if valor_str else Decimal("0")
-                    if nome not in vendas_por_vendedor:
-                        vendas_por_vendedor[nome] = Decimal("0")
-                    vendas_por_vendedor[nome] += valor
+                elif "-" in data_venda:
+                    venda_str = data_venda
+                else:
+                    continue
+
+                if not (di_str <= venda_str <= df_str):
+                    continue
+
+                valor = (
+                    parse_valor(venda.valortotal) if venda.valortotal else Decimal("0")
+                )
+                if vendedor not in vendas_por_vendedor:
+                    vendas_por_vendedor[vendedor] = Decimal("0")
+                vendas_por_vendedor[vendedor] += valor
 
             return {k: float(v) for k, v in vendas_por_vendedor.items()}
         except Exception:

@@ -206,7 +206,7 @@ flake8
 ### 🌍 VPS
 - 🔐 Acessar via SSH:
 ```bash
-ssh root@195.200.1.244
+ssh root@$DB_HOST
 ```
 
 - 📁 Entrar no diretório:

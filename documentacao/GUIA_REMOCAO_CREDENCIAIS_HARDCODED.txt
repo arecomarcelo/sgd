@@ -1,0 +1,270 @@
+================================================================================
+  GUIA: REMOÇÃO DE CREDENCIAIS HARDCODED — STREAMLIT + DJANGO + POSTGRESQL
+  Gerado em: 17/04/2026
+================================================================================
+
+OBJETIVO
+--------
+Remover credenciais de banco de dados (usuário, senha, host) gravadas diretamente
+no código-fonte, substituindo por variáveis de ambiente com suporte a:
+  - Execução local (via arquivo .env)
+  - Streamlit Cloud (via st.secrets / dashboard de secrets)
+
+PRÉ-REQUISITO
+-------------
+  python-dotenv já instalado (requirements.txt):
+    python-dotenv==1.0.0
+
+  Caso não esteja, instalar:
+    pip install python-dotenv
+    pip freeze > requirements.txt
+
+
+================================================================================
+PASSO 1 — CRIAR/VERIFICAR ARQUIVO .env (execução local)
+================================================================================
+
+Criar na raiz do projeto o arquivo .env com as credenciais:
+
+  # Configurações do Banco de Dados PostgreSQL
+  DB_NAME=nome_do_banco
+  DB_USER=usuario
+  DB_PASSWORD=sua_senha
+  DB_HOST=ip_ou_host
+  DB_PORT=5432
+
+  # (opcional) Chave secreta Django
+  SECRET_KEY=sua_chave_secreta_django
+
+IMPORTANTE: o .env NÃO deve ser versionado. Verificar se está no .gitignore:
+  echo ".env" >> .gitignore
+
+
+================================================================================
+PASSO 2 — CRIAR .env.example (referência pública, sem valores reais)
+================================================================================
+
+Criar na raiz do projeto o arquivo .env.example:
+
+  DB_NAME=nome_do_banco
+  DB_USER=usuario_do_banco
+  DB_PASSWORD=sua_senha_aqui
+  DB_HOST=ip_ou_host_do_banco
+  DB_PORT=5432
+  SECRET_KEY=sua_chave_secreta_aqui
+
+Este arquivo PODE ser versionado — serve como documentação do que é necessário.
+
+
+================================================================================
+PASSO 3 — CRIAR .streamlit/secrets.toml (execução local com Streamlit)
+================================================================================
+
+Criar a pasta e o arquivo:
+  mkdir -p .streamlit
+
+Conteúdo do arquivo .streamlit/secrets.toml:
+
+  [database]
+  DB_NAME = "nome_do_banco"
+  DB_USER = "usuario"
+  DB_PASSWORD = "sua_senha"
+  DB_HOST = "ip_ou_host"
+  DB_PORT = "5432"
+
+IMPORTANTE: garantir que está no .gitignore:
+  echo ".streamlit/secrets.toml" >> .gitignore
+
+Verificar se a linha já existe antes de adicionar.
+
+
+================================================================================
+PASSO 4 — ATUALIZAR service.py
+================================================================================
+
+Substituir imports e DB_CONFIG hardcoded pelo padrão abaixo:
+
+--- ANTES ---
+  class DataService:
+      def __init__(self):
+          self.DB_CONFIG = {
+              "dbname": "nome_banco",
+              "user": "postgres",
+              "password": "senha_hardcoded",
+              "host": "192.168.1.1",
+              "port": "5432",
+          }
+
+--- DEPOIS ---
+  import os
+
+  import streamlit as st
+  from dotenv import load_dotenv
+
+  load_dotenv()
+
+
+  def _get_db_secret(key: str, default: str = "") -> str:
+      """Lê credencial de st.secrets (Streamlit Cloud) ou os.environ (local/.env)."""
+      try:
+          return st.secrets["database"].get(key, os.environ.get(key, default))
+      except Exception:
+          return os.environ.get(key, default)
+
+
+  class DataService:
+      def __init__(self):
+          self.DB_CONFIG = {
+              "dbname": _get_db_secret("DB_NAME", "nome_banco"),
+              "user": _get_db_secret("DB_USER", "postgres"),
+              "password": _get_db_secret("DB_PASSWORD"),
+              "host": _get_db_secret("DB_HOST", "192.168.1.1"),
+              "port": _get_db_secret("DB_PORT", "5432"),
+          }
+
+LÓGICA DO HELPER _get_db_secret():
+  1. Tenta ler de st.secrets["database"] (funciona no Streamlit Cloud e local com secrets.toml)
+  2. Se st.secrets não estiver disponível, cai para os.environ (lido do .env via load_dotenv)
+  3. Se nenhum dos dois tiver o valor, retorna o default fornecido
+
+
+================================================================================
+PASSO 5 — ATUALIZAR app/settings.py (Django)
+================================================================================
+
+--- ANTES ---
+  import os
+  from pathlib import Path
+
+  SECRET_KEY = "django-insecure-abc123..."
+
+  DATABASES = {
+      "default": {
+          "ENGINE": "django.db.backends.postgresql",
+          "NAME": "nome_banco",
+          "USER": "postgres",
+          "PASSWORD": "senha_hardcoded",
+          "HOST": "192.168.1.1",
+          "PORT": 5432,
+      }
+  }
+
+--- DEPOIS ---
+  import os
+  from pathlib import Path
+
+  from dotenv import load_dotenv
+
+  load_dotenv()
+
+  SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-abc123...")
+
+  DATABASES = {
+      "default": {
+          "ENGINE": "django.db.backends.postgresql",
+          "NAME": os.environ.get("DB_NAME", "nome_banco"),
+          "USER": os.environ.get("DB_USER", "postgres"),
+          "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+          "HOST": os.environ.get("DB_HOST", "192.168.1.1"),
+          "PORT": os.environ.get("DB_PORT", "5432"),
+      }
+  }
+
+
+================================================================================
+PASSO 6 — ATUALIZAR config/settings.py (se existir dataclass de configuração)
+================================================================================
+
+--- ANTES ---
+  from dataclasses import dataclass
+
+  @dataclass
+  class DatabaseConfig:
+      host: str = "192.168.1.1"
+      port: int = 5432
+      database: str = "nome_banco"
+      username: str = "postgres"
+      password: str = "senha_hardcoded"
+
+--- DEPOIS ---
+  import os
+  from dataclasses import dataclass, field
+
+  from dotenv import load_dotenv
+
+  load_dotenv()
+
+  @dataclass
+  class DatabaseConfig:
+      host: str = field(default_factory=lambda: os.environ.get("DB_HOST", "192.168.1.1"))
+      port: int = field(default_factory=lambda: int(os.environ.get("DB_PORT", "5432")))
+      database: str = field(default_factory=lambda: os.environ.get("DB_NAME", "nome_banco"))
+      username: str = field(default_factory=lambda: os.environ.get("DB_USER", "postgres"))
+      password: str = field(default_factory=lambda: os.environ.get("DB_PASSWORD", ""))
+
+  NOTA: usar field(default_factory=...) é necessário em dataclasses porque
+  os.environ.get() precisa ser avaliado em tempo de execução, não em tempo de
+  definição da classe.
+
+
+================================================================================
+PASSO 7 — LIMPAR DOCUMENTAÇÃO E ARQUIVOS MARKDOWN
+================================================================================
+
+Buscar e substituir qualquer ocorrência da senha real em arquivos .md, .txt, etc.:
+
+  grep -rn "senha_real" --include="*.md" --include="*.txt" .
+
+Substituir pelo placeholder:  os.environ.get("DB_PASSWORD")  ou  <senha_via_env>
+
+
+================================================================================
+PASSO 8 — CONFIGURAR SECRETS NO STREAMLIT CLOUD (produção)
+================================================================================
+
+1. Acessar: https://share.streamlit.io
+2. Selecionar o app
+3. Ir em: Settings → Secrets
+4. Colar o conteúdo abaixo e salvar:
+
+  [database]
+  DB_NAME = "nome_do_banco"
+  DB_USER = "usuario"
+  DB_PASSWORD = "sua_senha_real"
+  DB_HOST = "ip_ou_host"
+  DB_PORT = "5432"
+
+5. O app reinicia automaticamente após salvar.
+
+
+================================================================================
+VERIFICAÇÃO FINAL
+================================================================================
+
+Executar varredura para confirmar que nenhuma senha real restou no código:
+
+  grep -rn "senha_real" . --exclude-dir=venv --exclude-dir=.git
+  grep -rn "senha_real" . --include="*.py"
+  grep -rn "senha_real" . --include="*.md"
+
+Se não retornar resultados: saneamento concluído com sucesso.
+
+
+================================================================================
+RESUMO DOS ARQUIVOS QUE NORMALMENTE PRECISAM SER AJUSTADOS
+================================================================================
+
+  service.py              → DB_CONFIG hardcoded
+  app/settings.py         → DATABASES e SECRET_KEY hardcoded
+  config/settings.py      → dataclass DatabaseConfig e AppConfig hardcoded
+  CLAUDE.md / README.md   → exemplos de código com credenciais reais
+  documentacao/*.md       → análises ou guias com exemplos hardcoded
+
+  CRIAR:
+  .env                         → credenciais locais (não versionar)
+  .env.example                 → template público (versionar)
+  .streamlit/secrets.toml      → credenciais Streamlit local (não versionar)
+
+================================================================================
+FIM DO GUIA
+================================================================================

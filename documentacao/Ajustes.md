@@ -143,6 +143,16 @@
 
 - Ajustes Layout **Painel Ranking Vendedores** Fonte e Cores
 
+**17/04/2026**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+
+### **15:22 - Commit 16**
+
+- Remoção de **usuario** e **senha** Hardcode
+
 **dd/mm/2026**
 
 - #### ***Instalar requirements.txt***

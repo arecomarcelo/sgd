@@ -140,7 +140,7 @@ python manage.py shell
 
 - **Banco de Dados**: PostgreSQL
   - Database: `sga`
-  - Host: `195.200.1.244`
+  - Host: `$DB_HOST`
   - Port: `5432`
   - User: `postgres`
 - **Timezone**: America/Sao_Paulo

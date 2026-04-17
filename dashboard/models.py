@@ -9,6 +9,7 @@ class Dashboard(models.Model):
 
     class Meta:
         db_table = "Dashboard"
+        managed = False
         ordering = ["Nome"]
         verbose_name = "Dashboard"
         verbose_name_plural = "Dashboards"
@@ -31,6 +32,7 @@ class Dashboard_Config(models.Model):
 
     class Meta:
         db_table = "Dashboard_Config"
+        managed = False
         ordering = ["Ordem"]
         verbose_name = "Dashboard Configuração"
         verbose_name_plural = "Dashboard Configurações"
@@ -56,7 +58,7 @@ class RPA(models.Model):
 
     class Meta:
         db_table = "RPA"
-        managed = False  # Tabela já existe, Django não deve gerenciá-la
+        managed = False
         verbose_name = "RPA"
         verbose_name_plural = "RPAs"
 
@@ -76,6 +78,7 @@ class RPA_Atualizacao(models.Model):
 
     class Meta:
         db_table = "RPA_Atualizacao"
+        managed = False
         ordering = ["Data"]
         verbose_name = "RPA Atualização"
         verbose_name_plural = "RPA Atualizações"
@@ -103,7 +106,7 @@ class VendaConfiguracao(models.Model):
 
     class Meta:
         db_table = "VendaConfiguracao"
-        managed = False  # Tabela já existe, Django não deve gerenciá-la
+        managed = False
         verbose_name = "Venda Configuração"
         verbose_name_plural = "Vendas Configurações"
 
@@ -122,6 +125,7 @@ class Dashboard_Log(models.Model):
 
     class Meta:
         db_table = "Dashboard_Log"
+        managed = False
         ordering = ["-DataHora_Inicio"]
         verbose_name = "Dashboard Log"
         verbose_name_plural = "Dashboard Logs"
