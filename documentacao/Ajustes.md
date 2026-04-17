@@ -153,6 +153,10 @@
 
 - Remoção de **usuario** e **senha** Hardcode
 
+### **15:25 - Commit 17**
+
+- Correção de **usuario** e **senha** Hardcode
+
 **dd/mm/2026**
 
 - #### ***Instalar requirements.txt***

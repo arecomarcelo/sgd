@@ -2,6 +2,21 @@
 
 ## 📅 17/04/2026
 
+### ⏰ 15:45 - Correção de Conexão ao Banco no Streamlit Cloud
+
+**📋 O que foi pedido:**
+Corrigir erro `django.db.utils.OperationalError` no Streamlit Cloud causado por falha de conexão ao banco.
+
+**🔧 Detalhamento da Solução:**
+O problema: `st.secrets` no Streamlit Cloud **não** popula automaticamente `os.environ`. O `settings.py` usa `os.environ.get()`, então as credenciais não eram encontradas.
+
+A correção foi feita em `django_setup.py`: antes de `django.setup()`, o código tenta ler `st.secrets["database"]` e injeta cada chave (`DB_NAME`, `DB_USER`, etc.) em `os.environ` caso ainda não estejam definidas. O `try/except` garante que falhas fora do contexto Streamlit não quebrem a inicialização local.
+
+**📁 Arquivos Alterados:**
+- ✏️ `django_setup.py`
+
+---
+
 ### ⏰ 15:30 - Sanitização Completa de Credenciais em Documentação
 
 **📋 O que foi pedido:**
