@@ -175,7 +175,7 @@ def render_meta_mes(theme='dark'):
                     background: {bg_color};
                     min-height: 100vh;
                     width: 100vw;
-                    padding: 30px 20px 200px 20px;
+                    padding: 30px 20px 30px 20px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -408,7 +408,7 @@ def render_metricas_vendas(theme='dark'):
                     background: {bg_color};
                     min-height: 100vh;
                     width: 100vw;
-                    padding: 40px 60px 180px 60px;
+                    padding: 40px 60px 40px 60px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -469,7 +469,7 @@ def render_metricas_vendas(theme='dark'):
 
                 @media (max-width: 1400px) {{
                     .metricas-container {{
-                        padding: 40px 40px 180px 40px;
+                        padding: 40px 40px 40px 40px;
                     }}
                     .metricas-grid {{
                         gap: 25px;
@@ -484,7 +484,7 @@ def render_metricas_vendas(theme='dark'):
 
                 @media (max-width: 768px) {{
                     .metricas-container {{
-                        padding: 30px 20px 180px 20px;
+                        padding: 30px 20px 30px 20px;
                     }}
                     .metricas-title {{
                         font-size: 2rem;
@@ -990,7 +990,7 @@ def render_texto(texto, titulo="", theme='dark'):
                     background: {bg_color};
                     min-height: 100vh;
                     width: 100vw;
-                    padding: 50px 60px 200px 60px;
+                    padding: 50px 60px 50px 60px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -1081,7 +1081,7 @@ def render_texto(texto, titulo="", theme='dark'):
 
                 @media (max-width: 1200px) {{
                     .texto-container {{
-                        padding: 40px 40px 180px 40px;
+                        padding: 40px 40px 40px 40px;
                     }}
                     .texto-card {{
                         padding: 40px 50px;
@@ -1093,7 +1093,7 @@ def render_texto(texto, titulo="", theme='dark'):
 
                 @media (max-width: 768px) {{
                     .texto-container {{
-                        padding: 30px 20px 180px 20px;
+                        padding: 30px 20px 30px 20px;
                     }}
                     .texto-titulo {{
                         font-size: 2rem;
@@ -1297,7 +1297,7 @@ def render_ranking_produtos(theme='dark'):
                     background: {bg_color};
                     min-height: 100vh;
                     width: 100vw;
-                    padding: 30px 40px 180px 40px;
+                    padding: 30px 40px 30px 40px;
                 }}
                 .ranking-title {{
                     color: {text_color_primary};
@@ -1397,7 +1397,7 @@ def render_ranking_produtos(theme='dark'):
 
                 @media (max-width: 600px) {{
                     .ranking-produtos-container {{
-                        padding: 30px 20px 180px 20px;
+                        padding: 30px 20px 30px 20px;
                     }}
                     .ranking-title {{
                         font-size: 1.8rem;

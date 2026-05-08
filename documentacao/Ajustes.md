@@ -157,6 +157,16 @@
 
 - Correção de **usuario** e **senha** Hardcode
 
+**08/05/2026**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+
+### **15:50 - Commit 18**
+
+- Ajuste: **Altura dos painéis para evitar sobreposição do footer em TVs**
+
 **dd/mm/2026**
 
 - #### ***Instalar requirements.txt***

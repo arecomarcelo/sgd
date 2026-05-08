@@ -10,6 +10,7 @@ import django
 # encontre as credenciais tanto no Streamlit Cloud quanto localmente via .env
 try:
     import streamlit as st
+
     db_secrets = st.secrets.get("database", {})
     for key in ("DB_NAME", "DB_USER", "DB_PASSWORD", "DB_HOST", "DB_PORT"):
         if key in db_secrets and key not in os.environ:

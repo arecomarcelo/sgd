@@ -327,6 +327,11 @@ st.markdown(
         align-items: center !important;
     }}
 
+    /* Responsividade TV: garante que iframes não ultrapassem o espaço acima do footer */
+    iframe {{
+        max-height: calc(100vh - 110px) !important;
+    }}
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -474,6 +479,40 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True,
+)
+
+# Ajuste dinâmico de altura dos painéis para evitar sobreposição do footer em TVs
+components.html(
+    """
+    <script>
+    (function() {
+        function ajustarIframes() {
+            try {
+                var win = window.parent;
+                var vh = win.innerHeight;
+                var footer = win.document.querySelector('.footer-panel');
+                var fh = footer ? footer.getBoundingClientRect().height + 12 : 110;
+                var altura = Math.floor(vh - fh);
+                win.document.querySelectorAll('iframe').forEach(function(el) {
+                    var h = parseInt(el.getAttribute('height') || 0);
+                    if (h > 300 && parseInt(el.style.height || h) !== altura) {
+                        el.style.height = altura + 'px';
+                        el.style.maxHeight = altura + 'px';
+                    }
+                });
+            } catch(e) {}
+        }
+        setTimeout(ajustarIframes, 150);
+        if (!window.parent._sgdResizeAttached) {
+            window.parent._sgdResizeAttached = true;
+            window.parent.addEventListener('resize', function() {
+                setTimeout(ajustarIframes, 100);
+            });
+        }
+    })();
+    </script>
+    """,
+    height=0,
 )
 
 # Botão de engrenagem para navegação
