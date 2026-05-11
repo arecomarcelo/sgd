@@ -181,10 +181,18 @@ class Vendas(models.Model):
     situacaonome = models.CharField(db_column="SituacaoNome", max_length=100)
     nomecanalvenda = models.CharField(db_column="NomeCanalVenda", max_length=100)
     condicaopagamento = models.CharField(db_column="CondicaoPagamento", max_length=100)
-    valorcusto = models.CharField(db_column="ValorCusto", max_length=100)
-    valorprodutos = models.CharField(db_column="ValorProdutos", max_length=100)
-    valordesconto = models.CharField(db_column="ValorDesconto", max_length=100)
-    valortotal = models.CharField(db_column="ValorTotal", max_length=100)
+    valorcusto = models.DecimalField(
+        db_column="ValorCusto", max_digits=15, decimal_places=2
+    )
+    valorprodutos = models.DecimalField(
+        db_column="ValorProdutos", max_digits=15, decimal_places=2
+    )
+    valordesconto = models.DecimalField(
+        db_column="ValorDesconto", max_digits=15, decimal_places=2
+    )
+    valortotal = models.DecimalField(
+        db_column="ValorTotal", max_digits=15, decimal_places=2
+    )
 
     def __str__(self):
         return f"{self.codigo} - {self.clientenome}"
@@ -238,11 +246,11 @@ class Produtos(models.Model):
     codigobarra = models.CharField(
         db_column="CodigoBarra", max_length=100, blank=True, null=True
     )
-    valorvenda = models.CharField(
-        db_column="ValorVenda", max_length=10, blank=True, null=True
+    valorvenda = models.DecimalField(
+        db_column="ValorVenda", max_digits=15, decimal_places=2, blank=True, null=True
     )
-    valorcusto = models.CharField(
-        db_column="ValorCusto", max_length=10, blank=True, null=True
+    valorcusto = models.DecimalField(
+        db_column="ValorCusto", max_digits=15, decimal_places=2, blank=True, null=True
     )
 
     def __str__(self):
@@ -285,11 +293,19 @@ class VendaProdutos(models.Model):
     venda_id = models.CharField(db_column="Venda_ID", max_length=100)
     nome = models.TextField(db_column="Nome")
     detalhes = models.TextField(db_column="Detalhes", blank=True, null=True)
-    quantidade = models.CharField(db_column="Quantidade", max_length=100)
-    valorcusto = models.CharField(db_column="ValorCusto", max_length=100)
-    valorvenda = models.CharField(db_column="ValorVenda", max_length=100)
-    valordesconto = models.CharField(db_column="ValorDesconto", max_length=100)
-    valortotal = models.CharField(db_column="ValorTotal", max_length=100)
+    quantidade = models.IntegerField(db_column="Quantidade")
+    valorcusto = models.DecimalField(
+        db_column="ValorCusto", max_digits=15, decimal_places=2
+    )
+    valorvenda = models.DecimalField(
+        db_column="ValorVenda", max_digits=15, decimal_places=2
+    )
+    valordesconto = models.DecimalField(
+        db_column="ValorDesconto", max_digits=15, decimal_places=2
+    )
+    valortotal = models.DecimalField(
+        db_column="ValorTotal", max_digits=15, decimal_places=2
+    )
 
     def __str__(self):
         return f"{self.nome} (Venda {self.venda_id})"

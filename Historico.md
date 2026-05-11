@@ -2,6 +2,60 @@
 
 ---
 
+## 📅 11/05/2026
+
+### 🕐 09:47 — Verificação Geral: Correção de Tipos de Campos dos Modelos
+
+**🔍 O que foi pedido:**
+Verificar a aplicação após ajustes nos tipos de campos dos modelos e corrigir possíveis quebras.
+
+**🛠️ Detalhamento da Solução:**
+
+**Problema crítico identificado:**
+O banco de dados foi atualizado para usar tipos numéricos nos campos de valor, mas os modelos Django ainda declaravam esses campos como `CharField`. Isso causava falha silenciosa nos cálculos de todos os painéis financeiros:
+- Os campos `ValorCusto`, `ValorProdutos`, `ValorDesconto`, `ValorTotal` em `Vendas` retornavam `Decimal` do banco, mas a função `parse_valor()` chamava `.strip()` em objetos `Decimal` (sem esse método), caindo no `except` e retornando `Decimal("0")` para todos os valores.
+- O campo `Quantidade` em `VendaProdutos` retornava `int`, mas `parse_quantidade()` chamava `.strip()` em inteiros, causando o mesmo problema.
+- Resultado: **todos os painéis (Meta do Mês, Métricas, Ranking) exibiam R$ 0,00**.
+
+**Divergências encontradas entre Banco e Modelos:**
+
+| Tabela | Campo | Banco | Modelo (antes) | Modelo (depois) |
+|--------|-------|-------|----------------|-----------------|
+| `Vendas` | `ValorCusto/Produtos/Desconto/Total` | `numeric(15,2)` | `CharField` | `DecimalField(15,2)` |
+| `VendaProdutos` | `Quantidade` | `integer` | `CharField` | `IntegerField` |
+| `VendaProdutos` | `ValorCusto/Venda/Desconto/Total` | `numeric(15,2)` | `CharField` | `DecimalField(15,2)` |
+| `Produtos` | `ValorVenda`, `ValorCusto` | `numeric(15,2)` | `CharField(10)` | `DecimalField(15,2)` |
+
+**Correções aplicadas:**
+
+1. **`dashboard/models.py`** — Atualização dos tipos de campos para refletir o banco real:
+   - `Vendas`: 4 campos de valor → `DecimalField(max_digits=15, decimal_places=2)`
+   - `VendaProdutos`: `quantidade` → `IntegerField`; 4 campos de valor → `DecimalField(15,2)`
+   - `Produtos`: `valorvenda`, `valorcusto` → `DecimalField(15,2, null=True, blank=True)`
+
+2. **`dashboard/panels.py`** — Funções `parse_valor()` e `parse_quantidade()` tornadas resilientes a tipos numéricos:
+   - Se o valor já é `Decimal`: retorna diretamente
+   - Se é `int` ou `float`: converte via `Decimal(str(valor))`
+   - Se é string: mantém lógica original
+
+3. **`dashboard/migrations/0004_...`** — Migração gerada para registrar `managed=False` nos modelos (operação no-op no banco)
+
+**Validação:**
+- `parse_valor(Decimal('728755.16'))` → `Decimal('728755.16')` ✅ (antes: `Decimal('0')`)
+- `parse_quantidade(5)` → `Decimal('5')` ✅ (antes: `Decimal('0')`)
+- Total Vendas do período calculado: `R$ 4.269.815,52` ✅ (antes: `R$ 0,00`)
+- `python manage.py check` → 0 issues ✅
+
+**📁 Arquivos Alterados:**
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `dashboard/models.py` | Tipos de campos numéricos corrigidos (`DecimalField`, `IntegerField`) |
+| `dashboard/panels.py` | Funções `parse_valor()` e `parse_quantidade()` atualizadas para suportar tipos numéricos |
+| `dashboard/migrations/0004_alter_dashboard_options_and_more.py` | Migração criada e aplicada (no-op no banco) |
+
+---
+
 ## 📅 08/05/2026
 
 ### 🕐 15:50 — Correção de Responsividade: Footer sobrepondo Painel na TV

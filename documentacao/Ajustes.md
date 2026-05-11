@@ -167,6 +167,16 @@
 
 - Ajuste: **Altura dos painéis para evitar sobreposição do footer em TVs**
 
+**11/05/2026**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+
+### **09:14 - Commit 19**
+
+- Ajuste **Modelos Alteração Tipo de Campos**
+
 **dd/mm/2026**
 
 - #### ***Instalar requirements.txt***

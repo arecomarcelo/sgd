@@ -32,19 +32,27 @@ def get_filtros_periodo():
     return data_inicial, data_final
 
 
-def parse_valor(valor_str):
-    """Converte string de valor monetário para Decimal"""
+def parse_valor(valor):
+    """Converte valor monetário para Decimal (aceita Decimal, int, float ou string)"""
     try:
-        valor_limpo = valor_str.strip().replace(",", ".")
+        if isinstance(valor, Decimal):
+            return valor
+        if isinstance(valor, (int, float)):
+            return Decimal(str(valor))
+        valor_limpo = str(valor).strip().replace(",", ".")
         return Decimal(valor_limpo)
     except:
         return Decimal("0")
 
 
-def parse_quantidade(quantidade_str):
-    """Converte string de quantidade para Decimal"""
+def parse_quantidade(quantidade):
+    """Converte quantidade para Decimal (aceita int, float, Decimal ou string)"""
     try:
-        valor_limpo = quantidade_str.strip().replace(",", ".")
+        if isinstance(quantidade, Decimal):
+            return quantidade
+        if isinstance(quantidade, (int, float)):
+            return Decimal(str(quantidade))
+        valor_limpo = str(quantidade).strip().replace(",", ".")
         return Decimal(valor_limpo)
     except:
         return Decimal("0")
