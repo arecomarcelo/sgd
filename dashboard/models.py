@@ -175,9 +175,7 @@ class Vendas(models.Model):
     clientenome = models.CharField(db_column="ClienteNome", max_length=100)
     vendedornome = models.CharField(db_column="VendedorNome", max_length=100)
     data = models.DateField(db_column="Data")
-    prazoentrega = models.DateField(
-        db_column="PrazoEntrega", null=True, blank=True
-    )
+    prazoentrega = models.DateField(db_column="PrazoEntrega", null=True, blank=True)
     situacaonome = models.CharField(db_column="SituacaoNome", max_length=100)
     nomecanalvenda = models.CharField(db_column="NomeCanalVenda", max_length=100)
     condicaopagamento = models.CharField(db_column="CondicaoPagamento", max_length=100)
@@ -193,9 +191,7 @@ class Vendas(models.Model):
     valortotal = models.DecimalField(
         db_column="ValorTotal", max_digits=15, decimal_places=2
     )
-    origem = models.CharField(
-        db_column="Origem", max_length=100, null=True, blank=True
-    )
+    origem = models.CharField(db_column="Origem", max_length=100, null=True, blank=True)
 
     def __str__(self):
         return f"{self.codigo} - {self.clientenome}"

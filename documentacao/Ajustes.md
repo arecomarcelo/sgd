@@ -186,13 +186,11 @@
 ### **11:29 - Commit 20**
 
 - Correção dos Erros **Recorrentes ao Ajuste das Tabelas Vendas e VendasProdutos**
+    - Causa: colunas **Data**, **PrazoEntrega**, **ID_Gestao** e **Venda_ID** alteradas no banco de `varchar` para `date`/`bigint`, mas os models Django ainda declaravam `CharField` — o parsing manual de string de data (`.strip()`/`.split("/")`) quebrava silenciosamente e descartava todas as vendas do período, zerando o dashboard
+    - `dashboard/models.py`: campos `Vendas.data`/`prazoentrega` → `DateField`, `Vendas.id_gestao`/`VendaProdutos.venda_id` → `BigIntegerField`, novas colunas `Origem` (Vendas) e `CodigoExpedicao` (VendaProdutos) adicionadas
+    - `dashboard/panels.py`: filtro de período reescrito para comparar objetos `date` nativos, sem parsing manual de string
+    - Testado via `streamlit run app.py --server.port 8001` — 4 painéis validados no navegador com dados reais (48 vendas no período)
 
-**dd/mm/2026**
+### **11:32 - Commit 21**
 
-- #### ***Instalar requirements.txt***
-  
-- #### Verificado: ***Executar formata.py***
-
-### **hh:mm - Commit nnn**
-
-- xxxx
+- Formatação **Black/Isort** de `dashboard/models.py` (sem alteração de lógica)
