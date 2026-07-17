@@ -3,7 +3,7 @@ Painéis de visualização para os dashboards do SGD
 Réplicas EXATAS dos layouts do SGR conforme imagens de referência
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 import pandas as pd
@@ -78,8 +78,8 @@ def get_vendas_periodo():
     di_parts = data_inicial.split("/")
     df_parts = data_final.split("/")
 
-    di_str = f"{di_parts[2]}-{di_parts[1]}-{di_parts[0]}"  # YYYY-MM-DD
-    df_str = f"{df_parts[2]}-{df_parts[1]}-{df_parts[0]}"  # YYYY-MM-DD
+    data_inicio = date(int(di_parts[2]), int(di_parts[1]), int(di_parts[0]))
+    data_fim = date(int(df_parts[2]), int(df_parts[1]), int(df_parts[0]))
 
     # Situações a serem excluídas
     situacoes_excluidas = ["Cancelada (sem financeiro)", "Não considerar - Excluidos"]
@@ -101,20 +101,10 @@ def get_vendas_periodo():
             if vendedor_nome not in vendedores_validos:
                 continue
 
-            data_venda = venda.data.strip()
-
-            if "/" in data_venda:
-                parts = data_venda.split("/")
-                if len(parts) == 3:
-                    venda_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
-                else:
-                    continue
-            elif "-" in data_venda:
-                venda_str = data_venda
-            else:
+            if not venda.data:
                 continue
 
-            if di_str <= venda_str <= df_str:
+            if data_inicio <= venda.data <= data_fim:
                 vendas_filtradas.append(venda)
         except:
             continue
@@ -609,9 +599,6 @@ def render_ranking_vendedores(theme='dark'):
             data_inicio_ant = data_inicio - relativedelta(years=1)
             data_fim_ant = data_fim - relativedelta(years=1)
 
-            di_str = data_inicio_ant.strftime("%Y-%m-%d")
-            df_str = data_fim_ant.strftime("%Y-%m-%d")
-
             vendedores_validos = set(Vendedores.objects.values_list("nome", flat=True))
 
             vendas_por_vendedor = {}
@@ -620,19 +607,10 @@ def render_ranking_vendedores(theme='dark'):
                 if not vendedor or vendedor not in vendedores_validos:
                     continue
 
-                data_venda = venda.data.strip() if venda.data else ""
-                if "/" in data_venda:
-                    parts = data_venda.split("/")
-                    if len(parts) == 3:
-                        venda_str = f"{parts[2]}-{parts[1]}-{parts[0]}"
-                    else:
-                        continue
-                elif "-" in data_venda:
-                    venda_str = data_venda
-                else:
+                if not venda.data:
                     continue
 
-                if not (di_str <= venda_str <= df_str):
+                if not (data_inicio_ant <= venda.data <= data_fim_ant):
                     continue
 
                 valor = (

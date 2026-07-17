@@ -4233,3 +4233,36 @@ Conteúdo do Ranking de Vendedores ainda gerava barra de rolagem vertical (3ª l
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+### ⏰ 17/07/2026 11:15 - Correção do Dashboard Zerado após Ajuste nas Tabelas Vendas e VendaProdutos
+
+#### 📝 Solicitação:
+Após ajustes realizados diretamente nas tabelas `Vendas` e `VendaProdutos` do banco `sga`, o dashboard passou a exibir todos os painéis zerados (Meta Mês, Métricas de Vendas, Ranking Vendedores, Ranking Produtos).
+
+#### 🔍 Causa Raiz:
+As colunas `Data` (Vendas) e `PrazoEntrega` (Vendas) foram alteradas no banco de `character varying` para `date`, e `ID_Gestao` (Vendas) / `Venda_ID` (VendaProdutos) de `character varying` para `bigint`. Os models Django ainda declaravam esses campos como `CharField`, então o ORM passou a retornar objetos `datetime.date`/`int` em vez de string. A função `get_vendas_periodo()` em `panels.py` chamava `venda.data.strip()` para fazer o parsing manual da data — como `date` não possui `.strip()`, a exceção era capturada por um `except: continue` silencioso, descartando **todas** as vendas do período (48 vendas viravam 0).
+
+#### ✅ Solução Implementada:
+1. **`dashboard/models.py`**:
+   - 🔧 `Vendas.id_gestao`: `CharField` → `BigIntegerField` (reflete `ID_Gestao bigint`)
+   - 🔧 `Vendas.data`: `CharField` → `DateField` (reflete `Data date`)
+   - 🔧 `Vendas.prazoentrega`: `CharField` → `DateField` (reflete `PrazoEntrega date`)
+   - ➕ `Vendas.origem`: novo campo `CharField` (coluna `Origem`, nova no banco)
+   - 🔧 `VendaProdutos.venda_id`: `CharField` → `BigIntegerField` (reflete `Venda_ID bigint`)
+   - ➕ `VendaProdutos.codigoexpedicao`: novo campo `CharField` (coluna `CodigoExpedicao`, nova no banco)
+2. **`dashboard/panels.py`**:
+   - 🔧 `get_vendas_periodo()`: removido parsing manual de string de data (`.split("/")`), substituído por comparação direta de objetos `date`
+   - 🔧 `calcular_vendas_periodo_anterior()` (dentro de `render_ranking_vendedores`): mesma correção de comparação por `date`
+   - ➕ Import de `date` adicionado a partir de `datetime`
+3. Nenhuma migração gerada (modelos `managed = False`, tabelas já existentes no banco — validado com `makemigrations --check --dry-run`)
+
+#### 🧪 Validação:
+- Antes da correção: `get_vendas_periodo()` retornava 0 vendas
+- Depois da correção: 48 vendas no período e 569 produtos vendidos associados, valores condizentes com o banco
+
+#### 📁 Arquivos Alterados:
+- 📄 **ALTERADO**: `dashboard/models.py` - Tipos de campos corrigidos (Vendas e VendaProdutos) + novas colunas
+- 📄 **ALTERADO**: `dashboard/panels.py` - Filtro de período corrigido para trabalhar com `date` nativo
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---

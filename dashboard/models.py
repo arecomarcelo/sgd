@@ -170,13 +170,13 @@ class Vendas(models.Model):
         verbose_name_plural = "Vendas"
 
     id = models.BigAutoField(primary_key=True)
-    id_gestao = models.CharField(db_column="ID_Gestao", max_length=100)
+    id_gestao = models.BigIntegerField(db_column="ID_Gestao")
     codigo = models.CharField(db_column="Codigo", max_length=100)
     clientenome = models.CharField(db_column="ClienteNome", max_length=100)
     vendedornome = models.CharField(db_column="VendedorNome", max_length=100)
-    data = models.CharField(db_column="Data", max_length=100)
-    prazoentrega = models.CharField(
-        db_column="PrazoEntrega", max_length=100, null=True, blank=True
+    data = models.DateField(db_column="Data")
+    prazoentrega = models.DateField(
+        db_column="PrazoEntrega", null=True, blank=True
     )
     situacaonome = models.CharField(db_column="SituacaoNome", max_length=100)
     nomecanalvenda = models.CharField(db_column="NomeCanalVenda", max_length=100)
@@ -192,6 +192,9 @@ class Vendas(models.Model):
     )
     valortotal = models.DecimalField(
         db_column="ValorTotal", max_digits=15, decimal_places=2
+    )
+    origem = models.CharField(
+        db_column="Origem", max_length=100, null=True, blank=True
     )
 
     def __str__(self):
@@ -290,7 +293,7 @@ class VendaProdutos(models.Model):
         verbose_name_plural = "Venda Produtos"
 
     id = models.BigAutoField(primary_key=True)
-    venda_id = models.CharField(db_column="Venda_ID", max_length=100)
+    venda_id = models.BigIntegerField(db_column="Venda_ID")
     nome = models.TextField(db_column="Nome")
     detalhes = models.TextField(db_column="Detalhes", blank=True, null=True)
     quantidade = models.IntegerField(db_column="Quantidade")
@@ -305,6 +308,9 @@ class VendaProdutos(models.Model):
     )
     valortotal = models.DecimalField(
         db_column="ValorTotal", max_digits=15, decimal_places=2
+    )
+    codigoexpedicao = models.CharField(
+        db_column="CodigoExpedicao", max_length=100, null=True, blank=True
     )
 
     def __str__(self):

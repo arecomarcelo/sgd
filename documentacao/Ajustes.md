@@ -177,6 +177,16 @@
 
 - Ajuste **Modelos Alteração Tipo de Campos**
 
+**17/07/2026**
+
+- #### ***Instalar requirements.txt***
+  
+- #### Verificado: ***Executar formata.py***
+
+### **11:29 - Commit 20**
+
+- Correção dos Erros **Recorrentes ao Ajuste das Tabelas Vendas e VendasProdutos**
+
 **dd/mm/2026**
 
 - #### ***Instalar requirements.txt***
