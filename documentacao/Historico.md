@@ -4373,3 +4373,24 @@ Alterado apenas o nome do alias (mantendo os caminhos dos scripts, que continuam
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+### ⏰ 15:50 - Correção: Primeiro Dashboard Duplicado + Predeploy (Black/Isort/Mypy)
+
+**📋 O que foi pedido:**
+1. Ao carregar o slideshow, o primeiro dashboard configurado (por `Ordem`) era exibido duas vezes seguidas antes do segundo aparecer.
+2. `bash scripts/predeploy.sh` falhava ao formatar/lintar com `python -m black`/`isort`/`mypy`, erro `No module named black` (e isort/mypy).
+
+**🔧 Detalhamento da Solução:**
+
+1. **Bug do primeiro dashboard duplicado** (`pages/01_🎬_Slideshow.py`): causa raiz era a checagem `if count > 0:` do `st_autorefresh` — verdadeira em TODO rerun a partir do segundo (não só quando o timer realmente disparava de novo), e o `current_config`/`current_dashboard`/`duracao` usados na renderização já tinham sido calculados ANTES desse bloco, com o índice ainda antigo. Resultado: no primeiro ciclo, o dashboard de índice 0 era renderizado no carregamento inicial E de novo no rerun seguinte (quando o índice já avançava para 1 nos bastidores, mas a tela ainda mostrava o índice 0). Corrigido:
+   - Novo `st.session_state.last_refresh_count` rastreia o último `count` já processado, avançando o índice só quando `count` realmente aumentou (não em todo rerun).
+   - `current_config`/`current_dashboard`/`duracao` são recalculados no mesmo rerun, já com o índice novo, antes da renderização — sem depender de `st.rerun()` (uma primeira tentativa usando `st.rerun()` aqui causava o componente `st_autorefresh` reportar contagens em rajada, girando os slides muito mais rápido que a duração configurada — regressão identificada e revertida durante o teste local antes do commit).
+   - Validado localmente com Docker: sequência de timestamps confirmou avanço de exatamente 1 slide a cada ~10,25s (duração configurada = 10s), sem repetição do primeiro dashboard.
+2. **Predeploy (Black/Isort/Mypy)** (`formata.py`): causa raiz era `subprocess.run("python -m black ...", shell=True)` — o `python` bare resolve pelo `PATH` do processo, que cai no Python do `pyenv` (sem os pacotes), mesmo com `formata.py` sendo executado pela venv do projeto (que TEM black/isort/mypy instalados, confirmado via `venv/bin/python -m black --version`). Corrigido usando `sys.executable` (o mesmo interpretador que já está rodando `formata.py`) nos 3 comandos, em vez do `python` bare. Validado com `venv/bin/python formata.py` — Black, Isort e Mypy rodaram com sucesso.
+
+**📁 Arquivos Alterados:**
+- 📝 **ALTERADO**: `pages/01_🎬_Slideshow.py` - correção do bug de duplicação do primeiro dashboard
+- 📝 **ALTERADO**: `formata.py` - usa `sys.executable` em vez de `python` bare nos comandos de black/isort/mypy
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---

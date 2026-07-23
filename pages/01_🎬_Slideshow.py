@@ -64,6 +64,9 @@ if 'start_time' not in st.session_state:
 if 'is_paused' not in st.session_state:
     st.session_state.is_paused = False
 
+if 'last_refresh_count' not in st.session_state:
+    st.session_state.last_refresh_count = 0
+
 # Armazenar última ação para debug
 if 'last_action' not in st.session_state:
     st.session_state.last_action = "Nenhuma ação ainda"
@@ -391,12 +394,26 @@ duracao = current_config.Duracao
 if not st.session_state.is_paused:
     count = st_autorefresh(interval=duracao * 1000, key="slideshow_refresh")
 
-    # Avançar para próximo slide
-    if count > 0:
+    # Avançar para o próximo slide somente quando o autorefresh realmente
+    # disparou de novo (count aumentou desde a última vez que processamos —
+    # sem essa comparação, "count > 0" também era verdade em reruns causados
+    # por outros motivos, ex.: prev/next). Recalcula current_config/
+    # current_dashboard/duracao já com o índice novo, neste mesmo rerun, para
+    # não renderizar o slide antigo mais uma vez (que era o bug original: o
+    # primeiro dashboard aparecia duas vezes antes do segundo ser exibido).
+    # Importante: NÃO usar st.rerun() aqui — chamar de novo o st_autorefresh
+    # logo em seguida faz o componente reportar contagens em rajada, girando
+    # os slides muito mais rápido que a duração configurada.
+    if count > st.session_state.last_refresh_count:
+        st.session_state.last_refresh_count = count
         st.session_state.current_index = (
             st.session_state.current_index + 1
         ) % total_dashboards
         st.session_state.start_time = time.time()  # Reiniciar o timer
+
+        current_config = list(dashboards_config)[st.session_state.current_index]
+        current_dashboard = current_config.Dashboard
+        duracao = current_config.Duracao
 
 # Renderizar painel dinâmico baseado no nome do dashboard
 # Normalizar removendo acentos para comparação

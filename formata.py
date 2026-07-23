@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import sys
 from pathlib import Path
 
 from rich.console import Console
@@ -100,15 +101,21 @@ def main():
     if not check_dependencies():
         return
 
+    # Usa o mesmo interpretador que está rodando este script (a venv do
+    # projeto, chamada pelo predeploy.sh) em vez de um "python" bare — que via
+    # subprocess/shell=True resolve pelo PATH e pode cair no python do pyenv
+    # (sem black/isort/mypy instalados), mesmo com a venv ativa.
+    python_exe = sys.executable
+
     # Formatação com verificações mais robustas
     black_success = run_command(
-        "python -m black . --line-length=88 --skip-string-normalization",
+        f'"{python_exe}" -m black . --line-length=88 --skip-string-normalization',
         "Black: Formatação concluída com sucesso!",
         "Black: Erro na formatação!",
     )
 
     isort_success = run_command(
-        "python -m isort . --profile black",
+        f'"{python_exe}" -m isort . --profile black',
         "Isort: Imports organizados com sucesso!",
         "Isort: Erro ao organizar imports!",
     )
@@ -116,7 +123,7 @@ def main():
     # Verificação de tipos com configuração de desenvolvimento (warnings são OK)
     console.print("\n[yellow]⚙️  Executando Mypy em modo desenvolvimento...[/yellow]")
     mypy_result = run_command(
-        "python -m mypy app.py --ignore-missing-imports --allow-untyped-defs",
+        f'"{python_exe}" -m mypy app.py --ignore-missing-imports --allow-untyped-defs',
         "Mypy: Verificação do arquivo principal concluída!",
         "Mypy: Arquivo principal tem alguns warnings (normal em desenvolvimento)",
     )
