@@ -4298,3 +4298,40 @@ Todas as memórias de projeto foram registradas em `~/.claude/projects/-home-are
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+### ⏰ 15:25 - Execução Real do Deploy na VPS (Docker + Vhost + SSL)
+
+**📋 O que foi pedido:**
+Avançar da preparação de arquivos para a execução real: subir o SGD dockerizado em produção na VPS `195.200.1.244`, com o subdomínio `dashboard.oficialsport.com.br` funcionando de fato.
+
+**🔧 Detalhamento da Solução:**
+
+1. **Reconhecimento prévio (somente leitura)**: confirmado via SSH que a rede `traefik_public` já existe, a porta `8113` está livre (não colide com nenhum serviço Swarm existente), `/home/deploy/apps/sgd` ainda não existia, e o DNS de `dashboard.oficialsport.com.br` já apontava para `195.200.1.244`.
+2. **Vhost OpenLiteSpeed** — criado em duas etapas (mesmo processo do SGR):
+   - Etapa 1 (HTTP only): `vhost.conf` com `extprocessor`/`context /`/`websocket /_stcore/stream` apontando para `127.0.0.1:8113`, bloco `virtualhost sgd` e `map sgd dashboard.oficialsport.com.br` adicionados só no listener `Default` em `httpd_config.conf` (backup do arquivo original feito antes de editar). Restart gracioso (`lswsctrl restart`, zero downtime) — validado que os demais 10 apps/vhosts continuaram respondendo normalmente.
+   - Certificado: `certbot certonly --webroot` emitido com sucesso para `dashboard.oficialsport.com.br` (reaproveitando a conta Let's Encrypt já registrada na VPS), válido até 21/10/2026.
+   - Etapa 2 (HTTPS): bloco `vhssl` (com `enableSpdy 0`) adicionado ao `vhost.conf`, `map sgd` adicionado também ao listener `Defaultssl`. Novo restart gracioso — sanity check nos demais apps novamente OK.
+3. **Deploy do container**:
+   - `git clone` do repositório em `/home/deploy/apps/sgd` na VPS (acesso SSH ao GitHub já configurado no root da VPS).
+   - `.env` real criado na VPS (`chmod 600`) com `DB_HOST=host-postgres`, `DB_NAME=sga`, `DB_USER=postgres`, `DB_PASSWORD` real, e `SECRET_KEY` novo gerado (50 caracteres aleatórios) — não reaproveitando a chave insegura hardcoded em `app/settings.py`.
+   - `docker build` + `docker push` da imagem `ghcr.io/arecomarcelo/sgd:latest` (a partir da máquina local, já autenticada no GHCR).
+   - `docker stack deploy -c stack.yml sgd --with-registry-auth` na VPS — serviço `sgd_web` subiu saudável (`1/1`, healthcheck OK) em poucos segundos.
+4. **Validação end-to-end**:
+   - `curl -v` simulando handshake WebSocket em `/_stcore/stream` → `HTTP/1.1 101 Switching Protocols` com `Connection: Upgrade` (não `Keep-Alive`) — confirma que os 3 ajustes de WebSocket funcionaram de primeira.
+   - Validação visual real no navegador (Chrome via Claude in Chrome): `https://dashboard.oficialsport.com.br` carregou, redirecionou automaticamente para `/Slideshow` (confirma WebSocket ativo, já que esse redirect é feito pelo backend Streamlit) e renderizou o painel "Ranking de Vendedores" com dados reais do banco `sga` e fotos dos vendedores. Sem erros no console do navegador.
+
+**⚠️ Observações importantes:**
+- O SGD legado (Streamlit Cloud + eventual "servidor de produção" via SSH/git pull mencionado em entradas anteriores deste histórico) **continua ativo em paralelo** — nenhuma dessas instâncias foi desligada nesta sessão. Decisão sobre desativá-las fica pendente de confirmação do usuário numa próxima sessão.
+- A porta 5432 do Postgres nativo continua exposta publicamente (mitigação de segurança aplicada só para esta nova instância Docker, que conecta via rede interna `host-postgres`) — fechamento do firewall segue como pendência de escopo de toda a VPS.
+- Aviso do Docker Swarm durante o deploy: `ignoring IP-address (127.0.0.1:8113:8113/tcp) service will listen on '0.0.0.0'` — limitação conhecida do modo Swarm (roteamento mesh sempre expõe em todas as interfaces, ignorando o binding `127.0.0.1` do `stack.yml`); mesmo comportamento já presente no SGR, não é uma regressão introduzida aqui.
+
+**📁 Arquivos Alterados/Criados (na VPS, fora do repositório):**
+- `/usr/local/lsws/conf/httpd_config.conf` (backup criado antes de editar)
+- `/usr/local/lsws/conf/vhosts/sgd/vhost.conf` (novo)
+- `/etc/letsencrypt/live/dashboard.oficialsport.com.br/` (certificado novo)
+- `/home/deploy/apps/sgd/` (clone do repositório + `.env` real)
+
+**📁 Arquivos Alterados neste repositório:**
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
