@@ -4335,3 +4335,24 @@ Avançar da preparação de arquivos para a execução real: subir o SGD dockeri
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+### ⏰ 15:35 - Teste Local da Imagem Docker + Geração de Alias
+
+**📋 O que foi pedido:**
+Testar localmente a imagem Docker gerada, e gerar os alias de `rodar`/`predeploy`/`deploy` para o SGD seguindo o padrão já usado nas demais apps do ambiente Oficial (`administracao`, `financeiro`, `estoque`, `rpa`, `monitor-rpa`, `comex`).
+
+**🔧 Detalhamento da Solução:**
+
+1. **Teste local da imagem Docker**: `docker build -t sgd-test .` + `docker run -d --rm -p 8113:8113 --env-file .env sgd-test` — sem depender de Swarm/Traefik (o `stack.yml` é específico para produção). Healthcheck (`/_stcore/health`) respondeu `200`, e validação visual no navegador confirmou o slideshow renderizando dados reais do banco `sga`, idêntico à produção. Container e imagem de teste removidos ao final.
+2. **Alias gerados**: diferente das apps Multi-Aplicação (`administracao`/`financeiro`/`estoque`), que sobem Docker Compose local com banco/Redis espelhados, o SGD é sistema legado (Streamlit + Django ORM, sem banco local, sem Celery/Redis, modelos `managed=False`) — por isso `scripts/rodar-aplicacao.sh` foi adaptado para apenas validar `venv`/`.env` e subir `streamlit run app.py --server.port 8001` direto (porta de desenvolvimento local, diferente da porta `8113` usada dentro do container Docker).
+   - `rodar-sgd` → `scripts/rodar-aplicacao.sh` (novo)
+   - `predeploy-sgd` → `scripts/predeploy.sh` (já existia, criado na sessão anterior)
+   - `deploy-sgd` → `scripts/deploy_local.sh` (já existia, criado na sessão anterior)
+   - Registrados em `~/.zshrc` (linhas após o bloco do Comex) e `~/.bashrc` (mesmo ponto), na mesma ordem `rodar`/`predeploy`/`deploy` usada nos outros apps.
+
+**📁 Arquivos Alterados/Criados:**
+- ➕ **CRIADO**: `scripts/rodar-aplicacao.sh`
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+- 📝 **ALTERADO** (fora do repositório): `~/.zshrc` e `~/.bashrc` - alias `rodar-sgd`/`predeploy-sgd`/`deploy-sgd`
+
+---
