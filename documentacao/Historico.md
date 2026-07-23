@@ -4266,3 +4266,35 @@ As colunas `Data` (Vendas) e `PrazoEntrega` (Vendas) foram alteradas no banco de
 - 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
 
 ---
+
+## 📅 23/07/2026
+
+### ⏰ 14:56 - Preparação da Dockerização + Deploy VPS (padrão SGR)
+
+**📋 O que foi pedido:**
+Aplicar no SGD o mesmo padrão de infraestrutura já validado no SGR: Docker + Infraestrutura VPS produção, ajuste de sub-domínio (WebSocket + OpenLiteSpeed) e mitigação da exposição da porta 5432. Além disso, apenas memorizar (sem implementar) a intenção futura de extrair o SGD para uma app Django dedicada.
+
+**🔧 Detalhamento da Solução:**
+Confirmado com o usuário: mesma VPS do SGR (`195.200.1.244`, Docker Swarm + Traefik), subdomínio `dashboard.oficialsport.com.br`, e preparação de arquivos localmente **antes** de qualquer execução na VPS (nada foi executado remotamente nesta sessão).
+
+1. **Docker + Infraestrutura VPS** — criados `Dockerfile` (porta `8113`, próxima livre após o `8112` do SGR), `entrypoint.sh` (passthrough simples, sem migrate — todos os modelos são `managed=False`), `stack.yml` (Swarm, `extra_hosts: host-postgres:host-gateway`, `replicas: 1` por causa do uso pesado de `st.session_state` no slideshow), `.dockerignore` (não existia — exclui `venv/` de 570MB) e `scripts/predeploy.sh`/`scripts/deploy_local.sh` (adaptados do SGR, ajustando branch `master` em vez de `main`, `VPS_APP_DIR=/home/deploy/apps/sgd`, `APP_URL=https://dashboard.oficialsport.com.br`).
+2. **Sub-domínio (WebSocket + OpenLiteSpeed)** — criado `documentacao/deploy/vhost_dashboard_oficialsport.conf`, um template/referência com os 3 ajustes que resolveram o mesmo problema no SGR: `enableSpdy 0` (desliga HTTP/2 no vhost), `enableWebSocket 1` (context proxy) e bloco `websocket /_stcore/stream` dedicado (causa raiz real: proxy genérico devolve `Connection: Keep-Alive` em vez de `Upgrade`).
+3. **Segurança — porta 5432** — o `stack.yml` já conecta via `host-postgres` (rede interna Docker), eliminando o hop de internet pública para o SGD, mas o fechamento efetivo da porta no firewall do host segue pendente (escopo de toda a VPS, ação que cabe ao usuário aplicar diretamente).
+4. **Plano futuro de extração** — apenas memorizado (sem planejamento formal, sem código): intenção de replicar no SGD o movimento já feito no SGR (extração para app Django dedicada, ex. `dashboard`).
+
+Todas as memórias de projeto foram registradas em `~/.claude/projects/-home-areco-Projetos-Oficial-Antigos-sgd/memory/` (índice `MEMORY.md` + 4 arquivos).
+
+**⚠️ Observação:** nenhuma ação foi executada na VPS (SSH, build, push de imagem, deploy do stack, ou provisionamento do vhost) — apenas os arquivos locais foram preparados, por decisão do usuário, para revisão antes de aplicar.
+
+**📁 Arquivos Alterados/Criados:**
+- ➕ **CRIADO**: `Dockerfile`
+- ➕ **CRIADO**: `entrypoint.sh`
+- ➕ **CRIADO**: `stack.yml`
+- ➕ **CRIADO**: `.dockerignore`
+- 📝 **ALTERADO**: `.env.example` - comentário sobre `DB_HOST=host-postgres` para deploy Docker
+- ➕ **CRIADO**: `scripts/predeploy.sh`
+- ➕ **CRIADO**: `scripts/deploy_local.sh`
+- ➕ **CRIADO**: `documentacao/deploy/vhost_dashboard_oficialsport.conf`
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
