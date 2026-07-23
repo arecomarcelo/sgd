@@ -4356,3 +4356,20 @@ Testar localmente a imagem Docker gerada, e gerar os alias de `rodar`/`predeploy
 - 📝 **ALTERADO** (fora do repositório): `~/.zshrc` e `~/.bashrc` - alias `rodar-sgd`/`predeploy-sgd`/`deploy-sgd`
 
 ---
+
+### ⏰ 15:40 - Renomear Alias: sgd → dashboard
+
+**📋 O que foi pedido:**
+Renomear os alias gerados na interação anterior, trocando o sufixo `sgd` por `dashboard`.
+
+**🔧 Detalhamento da Solução:**
+Alterado apenas o nome do alias (mantendo os caminhos dos scripts, que continuam em `/home/areco/Projetos/Oficial-Antigos/sgd/scripts/`):
+- `rodar-sgd` → `rodar-dashboard`
+- `predeploy-sgd` → `predeploy-dashboard`
+- `deploy-sgd` → `deploy-dashboard`
+
+**📁 Arquivos Alterados:**
+- 📝 **ALTERADO** (fora do repositório): `~/.zshrc` e `~/.bashrc` - alias renomeados
+- 📝 **ATUALIZADO**: `documentacao/Historico.md` - Registro desta interação
+
+---
